@@ -1,0 +1,79 @@
+#Code4SA #c4sa_areas .province {
+  fill: #444;
+  stroke-width: 8;
+}
+#Code4SA #c4sa_areas .municipality {
+  fill: #666;
+  display: none;
+}
+#Code4SA #c4sa_areas .ward {
+  fill: #A00;
+  display: none;
+}
+#Code4SA #c4sa_map.level-0 .province {
+  display: block;
+}
+#Code4SA #c4sa_map.level-0 .municipality {
+  display: none;
+}
+#Code4SA #c4sa_map.level-0 .ward {
+  display: none;
+}
+#Code4SA #c4sa_map.level-1 .province {
+  display: block;
+}
+#Code4SA #c4sa_map.level-1 .municipality {
+  display: block;
+}
+#Code4SA #c4sa_map.level-1 .ward {
+  display: none;
+}
+#Code4SA #c4sa_map.level-1 .munic-border {
+  display: inline;
+}
+#Code4SA #c4sa_map.level-1 .border-level-2 {
+  display: none;
+}
+#Code4SA #c4sa_map.level-2 .province {
+  display: block;
+}
+#Code4SA #c4sa_map.level-2 .municipality {
+  display: block;
+}
+#Code4SA #c4sa_map.level-2 .ward {
+  display: block;
+}
+#Code4SA #c4sa_map.level-2 .munic-border {
+  display: inline;
+}
+#Code4SA #c4sa_map.level-2 .ward-border {
+  display: inline;
+}
+#Code4SA #c4sa_map.level-2 .border-level-2 {
+  display: inline;
+}
+#Code4SA #c4sa_resetdiv {
+  position: absolute;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+#Code4SA #c4sa_hovertext {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+#Code4SA #c4sa_hoverobj {
+  fill: white;
+  stroke: none;
+  fill-opacity: 0.5;
+  pointer-events: none;
+}
+#Code4SA .border {
+  fill: none;
+  stroke: white;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  pointer-events: none;
+}
