@@ -30,6 +30,7 @@ Code4SA.Framework = (function(window,document,undefined) {
 })(this, this.document);
 
 var apiurl = "http://5.9.195.4/national/";
+// var mapurl = "http://localhost:8080/political/";
 var mapurl = "http://maps.code4sa.org/political/";
 
 var provinceurl = apiurl + "2009/province/";
@@ -77,29 +78,28 @@ var linear_scale = d3.scale.linear().domain([1, 0]);
 
 var colors = { "AFRICAN NATIONAL CONGRESS": 30, "DEMOCRATIC ALLIANCE": 190, "INKATHA FREEDOM PARTY": 270, "INDEPENDENT DEMOCRATS": 60, "CONGRESS OF THE PEOPLE": 90, "UNITED DEMOCRATIC MOVEMENT": 170 };
 
-function update_map(mapdata, data, id_field, className) {
+function update_map(mapdata, data, demarcation) {
+	// console.log(id_field, demarcation);
 	var areag = mapg.select("g#c4sa_areas");
 	var borderg = mapg.select("g#c4sa_borders");
 	var topo = topojson.feature(mapdata, mapdata.objects.demarcation).features;
-
 	for(var x = 0; x < topo.length; x++) {
-		var id = topo[x].id;
 		for(var y = 0; y < data.length; y++) {
-			if (data[y][id_field] == id) {
+			if (data[y][demarcation + "_id"] == topo[x].id) {
 				topo[x].properties.results = data[y].results;
 				topo[x].properties.winner = calc_winners(data[y].results.vote_count);
 				topo[x].properties.winner.perc = topo[x].properties.winner.vote_count / data[y].results.meta.total_votes;
 			}
 		}
+		topo[x].properties.level = levels.indexOf(demarcation);
 	}
 
-	areag.selectAll("." + className).remove();
+	areag.selectAll("." + demarcation).remove();
 
-	var area = areag.selectAll("." + className)
-		.data(topo);
+	var area = areag.selectAll("." + demarcation).data(topo);
 	area
 		.enter().append("path")
-		.attr("class", function(d) { return className + " " + d.id + " demarc-level-" + level; })
+		.attr("class", function(d) { return demarcation + " " + d.id + " level-" + levels.indexOf(demarcation); })
 		.style("fill", function(d) { 
 			if (d.properties.winner) {
 				return d3.hsl(colors[d.properties.winner.party], 0.6, linear_scale(d.properties.winner.perc)).rgb() 
@@ -107,18 +107,16 @@ function update_map(mapdata, data, id_field, className) {
 				return "#444";
 			}
 		})
-		.attr("data-level", function(d) { return d.properties.Level })
 		.attr("id", function(d) { return d.id })
 		.attr("d", path)
 		.on("click", zoomin)
 		.on("mousemove", hovered)
 		.on("mouseout", unhovered);
 
-	borderg.selectAll("." + className + "-border").remove();
-	// var stroke = borderg.selectAll("." + className + "-border").data(topo);
+	borderg.selectAll("." + demarcation + "-border").remove();
 	var stroke = borderg.append("path")
 		.datum(topojson.mesh(mapdata, mapdata.objects.demarcation, function (a, b){ return a !== b; }))
-		.attr("class", "border " + className + "-border border-level-" + level)
+		.attr("class", "border " + demarcation + "-border border-level-" + levels.indexOf(demarcation))
 		.attr("d", path)
 		.style("stroke-width", "0.1px");
 }
@@ -128,7 +126,7 @@ queue()
 	.defer(province_data_job.get)
 	.await(function (error, provinces, province_data) {
 		province_data = province_data.results;
-		update_map(provinces, province_data, "province_id", "province");
+		update_map(provinces, province_data, "province");
 	});
 
 function progressive_load(d) {
@@ -136,7 +134,7 @@ function progressive_load(d) {
 	
 	if (level == 1) {
 		//Load Minicipalities
-		var municipality_job = d3.json(mapurl + "municipality?quantization=3000&filter[PROVINCE]=" + d.id);
+		var municipality_job = d3.json(mapurl + "municipality?quantization=3000&filter[province]=" + d.id);
 		var municipality_data_job = d3.json(apiurl + "2009/municipality/?all_results=true&province=" + d.id);
 		queue()
 			.defer(municipality_job.get)
@@ -144,7 +142,7 @@ function progressive_load(d) {
 			.await(function(error, municipality, municipality_data) {
 				areag.selectAll("." + d.id).style("display", "none");
 				municipality_data = municipality_data.results;
-				update_map(municipality, municipality_data, "municipality_id", "municipality");
+				update_map(municipality, municipality_data, "municipality");
 				
 			}
 		);
@@ -154,7 +152,7 @@ function progressive_load(d) {
 		//Load Wards
 		areag.selectAll(".demarc-level-2").remove();
 		borderg.selectAll(".border-level-2").remove();
-		var ward_job = d3.json(mapurl + "ward?quantization=3000&filter[CAT_B]=" + d.id);
+		var ward_job = d3.json(mapurl + "ward?quantization=3000&filter[municipality]=" + d.id);
 		var ward_data_job = d3.json(apiurl + "2009/ward/?all_results=true&municipality=" + d.id);
 		//Fire the queue job
 		queue()
@@ -164,7 +162,7 @@ function progressive_load(d) {
 				areag.selectAll("." + d.id).style("display", "none");
 				areag.selectAll("." + d.properties.PROVINCE).style("display", "none");
 				ward_data = ward_data.results;
-				update_map(ward, ward_data, "ward_id", "ward");
+				update_map(ward, ward_data, "ward");
 			}
 		);
 	}
@@ -178,7 +176,7 @@ function reset_displayed() {
 
 function zoomin(d) {
 	curElem = d;
-	level = d.properties.Level + 1;
+	level = d.properties.level + 1;
 	if (level == 3) {
 		return;
 	}
