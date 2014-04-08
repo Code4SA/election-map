@@ -29,8 +29,8 @@ Code4SA.Framework = (function(window,document,undefined) {
 
 })(this, this.document);
 
-var apiurl = "http://5.9.195.4/national/";
-var mapurl = "http://maps.code4sa.org/political/";
+var apiurl = "http://localhost:5000/national/";
+var mapurl = "http://localhost:8080/political/";
 
 var provinceurl = apiurl + "2009/province/";
 var municipalurl = apiurl + "2009/municipality/?all_results=true";
@@ -136,13 +136,13 @@ function progressive_load(d) {
 	
 	if (level == 1) {
 		//Load Minicipalities
-		var municipality_job = d3.json(mapurl + "municipality?filter[PROVINCE]=" + d.id);
+		var municipality_job = d3.json(mapurl + "municipality?quantization=3000&filter[PROVINCE]=" + d.id);
 		var municipality_data_job = d3.json(apiurl + "2009/municipality/?all_results=true&province=" + d.id);
 		queue()
 			.defer(municipality_job.get)
 			.defer(municipality_data_job.get)
 			.await(function(error, municipality, municipality_data) {
-
+				areag.selectAll("." + d.id).style("display", "none");
 				municipality_data = municipality_data.results;
 				update_map(municipality, municipality_data, "municipality_id", "municipality");
 				
@@ -154,19 +154,26 @@ function progressive_load(d) {
 		//Load Wards
 		areag.selectAll(".demarc-level-2").remove();
 		borderg.selectAll(".border-level-2").remove();
-		var ward_job = d3.json(mapurl + "ward?filter[CAT_B]=" + d.id);
+		var ward_job = d3.json(mapurl + "ward?quantization=3000&filter[CAT_B]=" + d.id);
 		var ward_data_job = d3.json(apiurl + "2009/ward/?all_results=true&municipality=" + d.id);
-
 		//Fire the queue job
 		queue()
 			.defer(ward_job.get)
 			.defer(ward_data_job.get)
 			.await(function (error, ward, ward_data) {
+				areag.selectAll("." + d.id).style("display", "none");
+				areag.selectAll("." + d.properties.PROVINCE).style("display", "none");
 				ward_data = ward_data.results;
 				update_map(ward, ward_data, "ward_id", "ward");
 			}
 		);
 	}
+}
+
+function reset_displayed() {
+	var areag = mapg.select("g#c4sa_areas");
+	areag.selectAll(".province").style("display", "inherit");
+	areag.selectAll(".municipality").style("display", "inherit");
 }
 
 function zoomin(d) {
@@ -175,6 +182,7 @@ function zoomin(d) {
 	if (level == 3) {
 		return;
 	}
+	reset_displayed();
 	progressive_load(d);
 	if (level > 0) {
 		d3.select("#c4sa_zoomout").style("display", "inline");
@@ -205,6 +213,7 @@ function zoomin(d) {
 d3.select("#c4sa_zoomout").on("click", zoomout);
 
 function zoomout() {
+	reset_displayed();
 	// console.log(level);
 	if (level == 1) {
 		mapg.transition()
