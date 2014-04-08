@@ -212,7 +212,7 @@ d3.select("#c4sa_zoomout").on("click", zoomout);
 
 function zoomout() {
 	reset_displayed();
-	// console.log(level);
+	borderg.selectAll(".border-level-" + level).remove();
 	if (level == 1) {
 		mapg.transition()
     	.duration(750)
@@ -226,14 +226,10 @@ function zoomout() {
 		d3.select("#c4sa_zoomout")
 		.style("display", "none");
 	} else if (level == 2) {
-		province = curElem.properties.PROVINCE;
-		el = d3.select("#"+province);
-		// console.log(el.data());
+		el = d3.select("#" + curElem.properties.province);
 		zoomin(el.data()[0]);
 	} else if (level == 3) {
-		munic = curElem.properties.CAT_B;
-		el = d3.select("#"+munic);
-		// console.log(el.data());
+		el = d3.select("#" + curElem.properties.municipality);
 		zoomin(el.data()[0]);
 	}
 }
@@ -275,12 +271,13 @@ function hovered(d) {
 		hovering = true;
 		// console.log(d);
 		var title = "";
-		if (d.properties.Level == 0) {
-			title = d.properties.PROVINCE;
-		} else if (d.properties.Level == 1) {
-			title = d.properties.MUNICNAME + ", " + d.properties.PROVINCE;
+		console.log(d.properties);
+		if (d.properties.level == 0) {
+			title = d.properties.province_name;
+		} else if (d.properties.level == 1) {
+			title = d.properties.municipality_name + ", " + d.properties.province;
 		} else {
-			title = "Ward " + d.properties.WARDNO + ", " + d.properties.MUNICNAME;
+			title = "Ward " + d.properties.ward_number + ", " + d.properties.municipality_name;
 		}
 		// if (level==0) {
 			// var province = d.properties.PROVINCE;
