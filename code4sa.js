@@ -29,8 +29,8 @@ Code4SA.Framework = (function(window,document,undefined) {
 
 })(this, this.document);
 
-var apiurl = "http://localhost:5000/national/";
-var mapurl = "http://localhost:8080/political/";
+var apiurl = "http://5.9.195.4/national/";
+var mapurl = "http://maps.code4sa.org/political/";
 
 var provinceurl = apiurl + "2009/province/";
 var municipalurl = apiurl + "2009/municipality/?all_results=true";
