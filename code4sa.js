@@ -188,6 +188,7 @@ function progressive_load(d) {
 
 function hide_parents(d) {
 	var areag = mapg.select("g#c4sa_areas");
+	console.log(level);
 	switch(level) {
 		case 1:
 			return;
@@ -195,8 +196,11 @@ function hide_parents(d) {
 			// areag.selectAll("." + )
 			d3.selectAll(".province")
 				.style("display", "inherit");
+			d3.selectAll(".municipality")
+				.style("display", "inherit");
+			// console.log(d.properties);
 			d3.select("#" + d.properties.province).style("display", "none");
-			console.log(d);
+			d3.select("#" + d.properties.municipality).style("display", "none");
 			return;
 		case 3: //Ward level - hide province and municipality
 			var tmp = d3.select("#" + d.properties.municipality).style("display", "none");
