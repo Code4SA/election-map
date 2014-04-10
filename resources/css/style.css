@@ -10,47 +10,32 @@
   fill: #A00;
   display: none;
 }
-#Code4SA #c4sa_map.level-0 .province {
+#Code4SA #c4sa_map.level-0 .level-0 {
   display: block;
 }
-#Code4SA #c4sa_map.level-0 .municipality {
+#Code4SA #c4sa_map.level-0 .level-1 {
   display: none;
 }
-#Code4SA #c4sa_map.level-0 .ward {
+#Code4SA #c4sa_map.level-0 .level-2 {
   display: none;
 }
-#Code4SA #c4sa_map.level-1 .province {
+#Code4SA #c4sa_map.level-1 .level-0 {
   display: block;
 }
-#Code4SA #c4sa_map.level-1 .municipality {
+#Code4SA #c4sa_map.level-1 .level-1 {
   display: block;
 }
-#Code4SA #c4sa_map.level-1 .ward {
+#Code4SA #c4sa_map.level-1 .level-2 {
   display: none;
 }
-#Code4SA #c4sa_map.level-1 .munic-border {
-  display: inline;
-}
-#Code4SA #c4sa_map.level-1 .border-level-2 {
-  display: none;
-}
-#Code4SA #c4sa_map.level-2 .province {
+#Code4SA #c4sa_map.level-2 .level-0 {
   display: block;
 }
-#Code4SA #c4sa_map.level-2 .municipality {
+#Code4SA #c4sa_map.level-2 .level-1 {
   display: block;
 }
-#Code4SA #c4sa_map.level-2 .ward {
+#Code4SA #c4sa_map.level-2 .level-2 {
   display: block;
-}
-#Code4SA #c4sa_map.level-2 .munic-border {
-  display: inline;
-}
-#Code4SA #c4sa_map.level-2 .ward-border {
-  display: inline;
-}
-#Code4SA #c4sa_map.level-2 .border-level-2 {
-  display: inline;
 }
 #Code4SA #c4sa_resetdiv {
   position: absolute;

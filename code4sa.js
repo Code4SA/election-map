@@ -29,8 +29,10 @@ Code4SA.Framework = (function(window,document,undefined) {
 
 })(this, this.document);
 
-var apiurl = "http://5.9.195.4/national/";
+// var apiurl = "http://localhost:5000/national/";
 // var mapurl = "http://localhost:8080/political/";
+
+var apiurl = "http://5.9.195.4/national/";
 var mapurl = "http://maps.code4sa.org/political/";
 
 var provinceurl = apiurl + "2009/province/";
@@ -74,14 +76,23 @@ var levels = ["province", "municipality", "ward"];
 var levels_zoom = [1, 4, 15];
 var wardscache = {};
 
-var linear_scale = d3.scale.linear().domain([1, 0]);
+var linear_scale = d3.scale.linear().domain([0.3, 0.8]);
 
-var colors = { "AFRICAN NATIONAL CONGRESS": 30, "DEMOCRATIC ALLIANCE": 190, "INKATHA FREEDOM PARTY": 270, "INDEPENDENT DEMOCRATS": 60, "CONGRESS OF THE PEOPLE": 90, "UNITED DEMOCRATIC MOVEMENT": 170 };
+// var colors = { "AFRICAN NATIONAL CONGRESS": 30, "DEMOCRATIC ALLIANCE": 190, "INKATHA FREEDOM PARTY": 270, "INDEPENDENT DEMOCRATS": 60, "CONGRESS OF THE PEOPLE": 90, "UNITED DEMOCRATIC MOVEMENT": 170 };
+
+var colors = { "AFRICAN NATIONAL CONGRESS": "#d73027", "DEMOCRATIC ALLIANCE": "#4575b4", "INKATHA FREEDOM PARTY": "#fee090", "INDEPENDENT DEMOCRATS": "#e0f3f8", "CONGRESS OF THE PEOPLE": "#91bfdb", "UNITED DEMOCRATIC MOVEMENT": "#fc8d59" };
 
 function update_map(mapdata, data, demarcation) {
-	// console.log(id_field, demarcation);
-	var areag = mapg.select("g#c4sa_areas");
-	var borderg = mapg.select("g#c4sa_borders");
+	// var areag = mapg.select("g#c4sa_areas");
+	// var borderg = mapg.select("g#c4sa_borders");
+
+	//Let's prep the area
+	var demarcg = mapg.select("g#c4sa_" + demarcation);
+	demarcg.selectAll("g").remove();
+	var area = demarcg.insert("g").attr("class", "c4sa_area");
+	var border = demarcg.insert("g").attr("class", "c4sa_border");
+
+	//Add some data
 	var topo = topojson.feature(mapdata, mapdata.objects.demarcation).features;
 	for(var x = 0; x < topo.length; x++) {
 		for(var y = 0; y < data.length; y++) {
@@ -94,15 +105,14 @@ function update_map(mapdata, data, demarcation) {
 		topo[x].properties.level = levels.indexOf(demarcation);
 	}
 
-	areag.selectAll("." + demarcation).remove();
-
-	var area = areag.selectAll("." + demarcation).data(topo);
-	area
+	//Plot our areas
+	var areas = area.selectAll("." + demarcation).data(topo);
+	areas
 		.enter().append("path")
-		.attr("class", function(d) { return demarcation + " " + d.id + " level-" + levels.indexOf(demarcation); })
+		.attr("class", function(d) { return demarcation + " " + d.id })
 		.style("fill", function(d) { 
 			if (d.properties.winner) {
-				return d3.hsl(colors[d.properties.winner.party], 0.6, linear_scale(d.properties.winner.perc)).rgb() 
+				return d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc)); 
 			} else {
 				return "#444";
 			}
@@ -113,12 +123,14 @@ function update_map(mapdata, data, demarcation) {
 		.on("mousemove", hovered)
 		.on("mouseout", unhovered);
 
-	borderg.selectAll("." + demarcation + "-border").remove();
-	var stroke = borderg.append("path")
+	//Chuck on a border
+	var stroke = border.append("path")
 		.datum(topojson.mesh(mapdata, mapdata.objects.demarcation, function (a, b){ return a !== b; }))
-		.attr("class", "border " + demarcation + "-border border-level-" + levels.indexOf(demarcation))
+		.attr("class", "border " + demarcation + "-border")
 		.attr("d", path)
 		.style("stroke-width", "0.1px");
+
+	return true;
 }
 
 queue()
@@ -140,7 +152,7 @@ function progressive_load(d) {
 			.defer(municipality_job.get)
 			.defer(municipality_data_job.get)
 			.await(function(error, municipality, municipality_data) {
-				areag.selectAll("." + d.id).style("display", "none");
+				// areag.selectAll("." + d.id).style("display", "none");
 				municipality_data = municipality_data.results;
 				update_map(municipality, municipality_data, "municipality");
 				
@@ -150,8 +162,8 @@ function progressive_load(d) {
 	}
 	if (level == 2) {
 		//Load Wards
-		areag.selectAll(".demarc-level-2").remove();
-		borderg.selectAll(".border-level-2").remove();
+		// areag.selectAll(".demarc-level-2").remove();
+		// borderg.selectAll(".border-level-2").remove();
 		var ward_job = d3.json(mapurl + "ward?quantization=3000&filter[municipality]=" + d.id);
 		var ward_data_job = d3.json(apiurl + "2009/ward/?all_results=true&municipality=" + d.id);
 		//Fire the queue job
@@ -168,22 +180,51 @@ function progressive_load(d) {
 	}
 }
 
-function reset_displayed() {
+// function reset_displayed() {
+// 	var areag = mapg.select("g#c4sa_areas");
+// 	areag.selectAll(".province").style("display", "inherit");
+// 	areag.selectAll(".municipality").style("display", "inherit");
+// }
+
+function hide_parents(d) {
 	var areag = mapg.select("g#c4sa_areas");
-	areag.selectAll(".province").style("display", "inherit");
-	areag.selectAll(".municipality").style("display", "inherit");
+	switch(level) {
+		case 1:
+			return;
+		case 2: //Municipal level - hide province
+			// areag.selectAll("." + )
+			d3.selectAll(".province")
+				.style("display", "inherit");
+			d3.select("#" + d.properties.province).style("display", "none");
+			console.log(d);
+			return;
+		case 3: //Ward level - hide province and municipality
+			var tmp = d3.select("#" + d.properties.municipality).style("display", "none");
+			d3.select("#" + tmp.data()[0].properties.province).style("display", "none");
+			return;
+	}
+
 }
 
 function zoomin(d) {
 	curElem = d;
 	level = d.properties.level + 1;
-	if (level == 3) {
-		return;
+	if (level < 3) {
+		progressive_load(d);
 	}
-	reset_displayed();
-	progressive_load(d);
+	// d3.selectAll(".province")
+	// 	.style("display", "inherit");
+	
 	if (level > 0) {
 		d3.select("#c4sa_zoomout").style("display", "inline");
+	}
+	if (level == 1) {
+		d3.selectAll(".province")
+			.style("display", "inherit");
+	}
+	if (level == 2) {
+		d3.selectAll(".municipality")
+			.style("display", "inherit");
 	}
 	var x, y, dx, dy, k, w, h;
 	var centroid = path.centroid(d);
@@ -195,24 +236,20 @@ function zoomin(d) {
     k = .9 / Math.max(dx / width, dy / height);
     mapg.transition()
     	.duration(750)
-    	.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")");
- //    if (level < 2) {
-	// 	d3.selectAll(".municipality")
-	// 		.style("display", "none");
-	// }
-	// d3.selectAll(".ward")
-		// .style("display", "none");
+    	.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+    	.each("end", function() {
+    		hide_parents(d);
+    		// if (level < 3) {
+    		// 	d3.selectAll("#" + d.id).style("display", "none");
+    		// }
+    	});
 	mapg.attr("class", "level-" + level);
-	// d3.selectAll(".parent-" + d.id)
-	// 	.style("display", "inline");
-    // updateAll(curBallot, d.id);
+	// d3.selectAll("#" + d.id).style("display", "none");
 }
 
 d3.select("#c4sa_zoomout").on("click", zoomout);
 
 function zoomout() {
-	reset_displayed();
-	borderg.selectAll(".border-level-" + level).remove();
 	if (level == 1) {
 		mapg.transition()
     	.duration(750)
@@ -223,8 +260,11 @@ function zoomout() {
 			.style("display", "none");
 		d3.selectAll(".ward")
 			.style("display", "none");
+		console.log(level);
+		d3.selectAll(".province")
+			.style("display", "inherit");
 		d3.select("#c4sa_zoomout")
-		.style("display", "none");
+			.style("display", "none");
 	} else if (level == 2) {
 		el = d3.select("#" + curElem.properties.province);
 		zoomin(el.data()[0]);
@@ -271,7 +311,7 @@ function hovered(d) {
 		hovering = true;
 		// console.log(d);
 		var title = "";
-		console.log(d.properties);
+		// console.log(d.properties);
 		if (d.properties.level == 0) {
 			title = d.properties.province_name;
 		} else if (d.properties.level == 1) {
