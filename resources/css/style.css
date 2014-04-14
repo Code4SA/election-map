@@ -82,3 +82,29 @@
 #Code4SA #c4sa_overlay table {
   margin-bottom: 0px;
 }
+#Code4SA #c4sa_seats_overlay {
+  position: absolute;
+  background-color: #FFF;
+  padding: 10px;
+  border: 1px #CCC solid;
+  width: 400px;
+  height: auto;
+  overflow: hidden;
+  display: none;
+  font-size: 9pt;
+}
+#Code4SA #c4sa_seats_overlay h3 {
+  margin: 0px auto;
+}
+#Code4SA #c4sa_seats_overlay table {
+  margin-bottom: 0px;
+}
+#Code4SA #c4sa_seats_container .seat {
+  width: 10px;
+  height: 10px;
+  border: 1px #666 solid;
+  float: left;
+  margin-right: 2px;
+  margin-bottom: 2px;
+  background-color: #444;
+}

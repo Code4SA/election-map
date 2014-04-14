@@ -48,6 +48,9 @@ var curBallot = "";
 var curElem;
 var history = [];
 
+var num_format = d3.format(",");
+var perc_format = d3.format(".2%");
+
 var projection = d3.geo.conicEqualArea()
     .center([0, -28.5])
     .rotate([-24.5, 0])
@@ -371,8 +374,7 @@ function hovered(d) {
 		d3.select("#c4sa_hoverblurb").text(winner.party + " " + Math.round(winner.perc * 100) + "%");
 		d3.select("#c4sa_hovername").text(d.id);
 		d3.select("#c4sa_demarcation_title").text(title);
-		var num_format = d3.format(",");
-		var perc_format = d3.format(".2%");
+		
 		d3.select("#c4sa_section_24a_votes").text( num_format(d.properties.results.meta.section_24a_votes) );
 		d3.select("#c4sa_num_registered").text( num_format(d.properties.results.meta.num_registered) );
 		
@@ -404,9 +406,42 @@ function unhovered(d) {
 };
 
 
+function safe_id(s) {
+	return s.replace(/[^A-Za-z0-9]/g,"");
+}
+
 var seats=d3.select("#c4sa_seats_container");
 d3.json(apiurl + "2009/", function(error, data) {
-	console.log(data);
-	var seatdivs = d3.select("#c4sa_seats_container").data(data.results.vote_count);
-	seatdivs.enter().append("div");
+	var tmp = [];
+	var tot = 0;
+	for (party in data.results.vote_count) {
+		tmp.push({ party: party, votes: data.results.vote_count[party] });
+		tot += data.results.vote_count[party];
+	}
+	tmp.sort(function(a, b) { console.log(a, b); if (a.votes < b.votes) return 1; return -1; });
+	var seatdivs = d3.select("#c4sa_seats_container").selectAll("div").data(tmp).enter().append("div").attr("class", "party").attr("id", function(d) { return safe_id(d.party) }).each(
+		function(d) { 
+			for(var x = 0; x < Math.floor(d.votes / tot * 400); x++) {
+				d3.select("#" + safe_id(d.party)).append("div").attr("class", "seat").style("background-color", function(d) {
+					return colors[d.party];
+				});
+			}
+		}
+	).on("mousemove",
+		function(d) {
+
+			var el = d3.select("#c4sa_seats_overlay");
+			el.select("#c4sa_party").text(d.party);
+			el.select("#c4sa_seats_votes").text(num_format(d.votes));
+			el.select("#c4sa_seats_seats").text(Math.floor(d.votes / tot * 400));
+			el.select("#c4sa_seats_percentage").text(perc_format(d.votes / tot));
+			el.style("display", "block");
+			el.style("top", (d3.event.pageY + 10) + "px");
+			el.style("left", (d3.event.pageX - 200) + "px");
+		}
+	).on("mouseout", function(d) {
+		d3.select("#c4sa_seats_overlay").style("display", "none");
+	});
+				// console.log(d)});
+	// seatdivs.selectAll("div").enter().append("div").text(function(d) {console.log(d)});
 });
