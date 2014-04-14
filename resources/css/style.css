@@ -1,3 +1,6 @@
+#Code4SA #c4sa_map {
+  cursor: pointer;
+}
 #Code4SA #c4sa_areas .province {
   fill: #444;
   stroke-width: 8;
@@ -61,4 +64,21 @@
   stroke-linejoin: round;
   stroke-linecap: round;
   pointer-events: none;
+}
+#Code4SA #c4sa_overlay {
+  position: absolute;
+  background-color: #FFF;
+  padding: 10px;
+  border: 1px #CCC solid;
+  width: 400px;
+  height: auto;
+  overflow: hidden;
+  display: none;
+  font-size: 9pt;
+}
+#Code4SA #c4sa_overlay h3 {
+  margin: 0px auto;
+}
+#Code4SA #c4sa_overlay table {
+  margin-bottom: 0px;
 }

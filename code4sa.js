@@ -57,10 +57,12 @@ var projection = d3.geo.conicEqualArea()
 
  var path = d3.geo.path().projection(projection);
 
-var svg = d3.select("div#c4sa_map").select("svg");
-svg.attr("viewBox", "0 0 " + width + " " + height);
+var svg = d3.select("div#c4sa_map_container").select("svg");
+svg.attr("viewBox", "0 0 " + width + " " + (height + 100)).attr("id", "c4sa_svg");
 
-var mapg = svg.select("g#c4sa_map");
+var mapg = svg.select("g#c4sa_map")
+	.on("mousemove", move_overlay)
+	.on("mouseout", hide_overlay);
 var selph = mapg.select("g#c4sa_selph");
 var hoverph = mapg.select("g#c4sa_hoverph");
 var borderg = mapg.select("g#c4sa_borders");
@@ -188,7 +190,7 @@ function progressive_load(d) {
 
 function hide_parents(d) {
 	var areag = mapg.select("g#c4sa_areas");
-	console.log(level);
+	// console.log(level);
 	switch(level) {
 		case 1:
 			return;
@@ -237,7 +239,7 @@ function zoomin(d) {
     var bounds = path.bounds(d);
     dx = bounds[1][0] - bounds[0][0];
     dy = bounds[1][1] - bounds[0][1];
-    k = .9 / Math.max(dx / width, dy / height);
+    k = .8 / Math.max(dx / width, dy / height);
     mapg.transition()
     	.duration(750)
     	.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
@@ -278,6 +280,19 @@ function zoomout() {
 	}
 }
 
+function getNodePos(el)
+{
+    var body = d3.select('body').node();
+ 
+    for (var lx = 0, ly = 0;
+         el != null && el != body;
+         lx += (el.offsetLeft || el.clientLeft), ly += (el.offsetTop || el.clientTop), el = (el.offsetParent || el.parentNode))
+        ;
+    return {x: lx, y: ly};
+}
+
+
+
 function calc_winners(vote_count) {
 	var winners = [];
 	var winner = {};
@@ -301,14 +316,38 @@ function sort_votes(vote_count) {
 		tmp.push([party, vote_count[party]]);
 	}
 	tmp.sort(function(a, b) { return b[1] - a[1] });
-	return tmp;
+	return tmp.slice(0, 3);
 }
 
 var hovering = false;
+// var mappos = getNodePos(d3.select("#c4sa_svg").node());
+// var offset_top = 40;
+
+function move_overlay() {
+	var coordinates = [0, 0];
+	coordinates = d3.mouse(svg.node());
+	// console.log(d3.event.pageX);
+	// var x = Math.round(coordinates[0] + mappos.x);
+	// var y = Math.round(coordinates[1] + mappos.y + offset_top + 130);
+	var x = d3.event.pageX - 200;
+	var y = d3.event.pageY + 20;
+	var overlay = d3.select("div#c4sa_overlay");
+	overlay
+		.style("display", "block")
+		.style("top", y + "px")
+		.style("left", x + "px");
+}
+
+function hide_overlay() {
+	var overlay = d3.select("div#c4sa_overlay");
+	overlay
+		.style("display", "none");
+}
 
 function hovered(d) {
+	
+	// console.log(x, y);
 	if (!hovering) {
-		
 		hoverph.append("path")
 			.attr("d", d3.select(this).attr("d"))
 			.attr("id", "c4sa_hoverobj");
@@ -364,3 +403,10 @@ function unhovered(d) {
 	hovering = false;
 };
 
+
+var seats=d3.select("#c4sa_seats_container");
+d3.json(apiurl + "2009/", function(error, data) {
+	console.log(data);
+	var seatdivs = d3.select("#c4sa_seats_container").data(data.results.vote_count);
+	seatdivs.enter().append("div");
+});
