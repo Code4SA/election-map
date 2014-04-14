@@ -32,7 +32,7 @@ Code4SA.Framework = (function(window,document,undefined) {
 // var apiurl = "http://localhost:5000/national/";
 // var mapurl = "http://localhost:8080/political/";
 
-var apiurl = "http://5.9.195.4/national/";
+var apiurl = "http://iec-v2.code4sa.org/national/";
 var mapurl = "http://maps.code4sa.org/political/";
 
 var provinceurl = apiurl + "2009/province/";
@@ -78,11 +78,11 @@ var levels = ["province", "municipality", "ward"];
 var levels_zoom = [1, 4, 15];
 var wardscache = {};
 
-var linear_scale = d3.scale.linear().domain([0.3, 0.8]);
+var linear_scale = d3.scale.linear().domain([0.2, 1]);
 
 // var colors = { "AFRICAN NATIONAL CONGRESS": 30, "DEMOCRATIC ALLIANCE": 190, "INKATHA FREEDOM PARTY": 270, "INDEPENDENT DEMOCRATS": 60, "CONGRESS OF THE PEOPLE": 90, "UNITED DEMOCRATIC MOVEMENT": 170 };
 
-var colors = { "AFRICAN NATIONAL CONGRESS": "#d73027", "DEMOCRATIC ALLIANCE": "#4575b4", "INKATHA FREEDOM PARTY": "#fee090", "INDEPENDENT DEMOCRATS": "#e0f3f8", "CONGRESS OF THE PEOPLE": "#91bfdb", "UNITED DEMOCRATIC MOVEMENT": "#fc8d59" };
+var colors = { "AFRICAN NATIONAL CONGRESS": "#4575b4", "DEMOCRATIC ALLIANCE": "#d73027", "INKATHA FREEDOM PARTY": "#FF9400", "INDEPENDENT DEMOCRATS": "#e0f3f8", "CONGRESS OF THE PEOPLE": "#91bfdb", "UNITED DEMOCRATIC MOVEMENT": "#fc8d59" };
 
 function update_map(mapdata, data, demarcation) {
 	// var areag = mapg.select("g#c4sa_areas");
