@@ -4,6 +4,7 @@
 #Code4SA #c4sa_areas .province {
   fill: #444;
   stroke-width: 8;
+  opacity: 0.5;
 }
 #Code4SA #c4sa_areas .municipality {
   fill: #666;
@@ -87,7 +88,7 @@
   background-color: #FFF;
   padding: 10px;
   border: 1px #CCC solid;
-  width: 400px;
+  width: 200px;
   height: auto;
   overflow: hidden;
   display: none;
@@ -107,4 +108,8 @@
   margin-right: 2px;
   margin-bottom: 2px;
   background-color: #444;
+  opacity: 0.5;
+}
+#Code4SA #c4sa_seats_container div.active .seat {
+  opacity: 1;
 }

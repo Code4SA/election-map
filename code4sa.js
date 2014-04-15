@@ -85,12 +85,9 @@ var linear_scale = d3.scale.linear().domain([0.2, 1]);
 
 // var colors = { "AFRICAN NATIONAL CONGRESS": 30, "DEMOCRATIC ALLIANCE": 190, "INKATHA FREEDOM PARTY": 270, "INDEPENDENT DEMOCRATS": 60, "CONGRESS OF THE PEOPLE": 90, "UNITED DEMOCRATIC MOVEMENT": 170 };
 
-var colors = { "AFRICAN NATIONAL CONGRESS": "#4575b4", "DEMOCRATIC ALLIANCE": "#d73027", "INKATHA FREEDOM PARTY": "#FF9400", "INDEPENDENT DEMOCRATS": "#e0f3f8", "CONGRESS OF THE PEOPLE": "#91bfdb", "UNITED DEMOCRATIC MOVEMENT": "#fc8d59" };
+var colors = { "AFRICAN NATIONAL CONGRESS": "#008000", "DEMOCRATIC ALLIANCE": "#04599c", "INKATHA FREEDOM PARTY": "#911c1b", "INDEPENDENT DEMOCRATS": "#f87906", "CONGRESS OF THE PEOPLE": "#ffca08", "UNITED DEMOCRATIC MOVEMENT": "#770433", "VRYHEIDSFRONT PLUS": "#ff00a4", "AFRICAN CHRISTIAN DEMOCRATIC PARTY": "#adfc00", "UNITED CHRISTIAN DEMOCRATIC PARTY": "#AE00FF", "PAN AFRICANIST CONGRESS OF AZANIA": "#895E46", "MINORITY FRONT": "", "AZANIAN PEOPLE'S ORGANISATION": "#728915", "AFRICAN PEOPLE'S CONVENTION": "#895E46", "MOVEMENT DEMOCRATIC PARTY": "#4A5C72", "AL JAMA-AH": "#666", "ECONOMIC FREEDOM FIGHTERS": "#ed1b24" };
 
 function update_map(mapdata, data, demarcation) {
-	// var areag = mapg.select("g#c4sa_areas");
-	// var borderg = mapg.select("g#c4sa_borders");
-
 	//Let's prep the area
 	var demarcg = mapg.select("g#c4sa_" + demarcation);
 	demarcg.selectAll("g").remove();
@@ -114,15 +111,23 @@ function update_map(mapdata, data, demarcation) {
 	var areas = area.selectAll("." + demarcation).data(topo);
 	areas
 		.enter().append("path")
-		.attr("class", function(d) { return demarcation + " " + d.id })
+		.attr("class", function(d) { 
+			if (d.properties.winner) {
+				var winner_id = safe_id(d.properties.winner.party);
+			} else {
+				var winner_id = "none";
+			}
+			return demarcation + " " + d.id + " " + "winner_" + winner_id; 
+		})
 		.style("fill", function(d) { 
 			if (d.properties.winner) {
 				return d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc)); 
+				// return d3.rgb(colors[d.properties.winner.party]).brighter(linear_scale(d.properties.winner.perc)); 
 			} else {
 				return "#444";
 			}
 		})
-		.attr("id", function(d) { return d.id })
+		.attr("id", function(d) { return "c4sa_" + d.id })
 		.attr("d", path)
 		.on("click", zoomin)
 		.on("mousemove", hovered)
@@ -167,8 +172,6 @@ function progressive_load(d) {
 	}
 	if (level == 2) {
 		//Load Wards
-		// areag.selectAll(".demarc-level-2").remove();
-		// borderg.selectAll(".border-level-2").remove();
 		var ward_job = d3.json(mapurl + "ward?quantization=3000&filter[municipality]=" + d.id);
 		var ward_data_job = d3.json(apiurl + "2009/ward/?all_results=true&municipality=" + d.id);
 		//Fire the queue job
@@ -185,31 +188,27 @@ function progressive_load(d) {
 	}
 }
 
-// function reset_displayed() {
-// 	var areag = mapg.select("g#c4sa_areas");
-// 	areag.selectAll(".province").style("display", "inherit");
-// 	areag.selectAll(".municipality").style("display", "inherit");
-// }
-
 function hide_parents(d) {
 	var areag = mapg.select("g#c4sa_areas");
 	// console.log(level);
 	switch(level) {
-		case 1:
+		case 0:
 			return;
-		case 2: //Municipal level - hide province
+		case 1: //Municipal level - hide province
 			// areag.selectAll("." + )
+			console.log(d);
 			d3.selectAll(".province")
 				.style("display", "inherit");
 			d3.selectAll(".municipality")
 				.style("display", "inherit");
 			// console.log(d.properties);
-			d3.select("#" + d.properties.province).style("display", "none");
-			d3.select("#" + d.properties.municipality).style("display", "none");
+			d3.select("#c4sa_" + d.properties.province).style("display", "none");
+			d3.select("#c4sa_" + d.properties.municipality).style("display", "none");
 			return;
-		case 3: //Ward level - hide province and municipality
-			var tmp = d3.select("#" + d.properties.municipality).style("display", "none");
-			d3.select("#" + tmp.data()[0].properties.province).style("display", "none");
+		case 2: //Ward level - hide province and municipality
+			console.log(3, d);
+			d3.select("#c4sa_" + d.properties.municipality).style("display", "none");
+			d3.select("#c4sa_" + d.properties.province).style("display", "none");
 			return;
 	}
 
@@ -275,26 +274,13 @@ function zoomout() {
 		d3.select("#c4sa_zoomout")
 			.style("display", "none");
 	} else if (level == 2) {
-		el = d3.select("#" + curElem.properties.province);
+		el = d3.select("#c4sa_" + curElem.properties.province);
 		zoomin(el.data()[0]);
 	} else if (level == 3) {
-		el = d3.select("#" + curElem.properties.municipality);
+		el = d3.select("#c4sa_" + curElem.properties.municipality);
 		zoomin(el.data()[0]);
 	}
 }
-
-function getNodePos(el)
-{
-    var body = d3.select('body').node();
- 
-    for (var lx = 0, ly = 0;
-         el != null && el != body;
-         lx += (el.offsetLeft || el.clientLeft), ly += (el.offsetTop || el.clientTop), el = (el.offsetParent || el.parentNode))
-        ;
-    return {x: lx, y: ly};
-}
-
-
 
 function calc_winners(vote_count) {
 	var winners = [];
@@ -323,15 +309,10 @@ function sort_votes(vote_count) {
 }
 
 var hovering = false;
-// var mappos = getNodePos(d3.select("#c4sa_svg").node());
-// var offset_top = 40;
 
 function move_overlay() {
 	var coordinates = [0, 0];
 	coordinates = d3.mouse(svg.node());
-	// console.log(d3.event.pageX);
-	// var x = Math.round(coordinates[0] + mappos.x);
-	// var y = Math.round(coordinates[1] + mappos.y + offset_top + 130);
 	var x = d3.event.pageX - 200;
 	var y = d3.event.pageY + 20;
 	var overlay = d3.select("div#c4sa_overlay");
@@ -351,13 +332,9 @@ function hovered(d) {
 	
 	// console.log(x, y);
 	if (!hovering) {
-		hoverph.append("path")
-			.attr("d", d3.select(this).attr("d"))
-			.attr("id", "c4sa_hoverobj");
 		hovering = true;
-		// console.log(d);
+		
 		var title = "";
-		// console.log(d.properties);
 		if (d.properties.level == 0) {
 			title = d.properties.province_name;
 		} else if (d.properties.level == 1) {
@@ -365,29 +342,49 @@ function hovered(d) {
 		} else {
 			title = "Ward " + d.properties.ward_number + ", " + d.properties.municipality_name;
 		}
-		// if (level==0) {
-			// var province = d.properties.PROVINCE;
-		var results = d.properties.results;
-		var winner = d.properties.winner;
-		// var sorted = sort_votes(d.properties.results.vote_count);
-		// console.log(sorted);
+		if (d.properties.results) {
+			var results = d.properties.results;
+		} else {
+			results = {
+				meta: {
+					spoilt_votes: 0,
+					num_registered: 0, 
+					section_24a_votes: 0, 
+					total_votes: 0
+				},
+				vote_count: 0
+			};
+		}
+		if (d.properties.winner) {
+			var winner = d.properties.winner;
+		} else {
+			winner = {party: "none", votes: 0};
+		}
+
+		d3.selectAll(".province").style("opacity", "0.8");
+		d3.selectAll(".municipality").style("opacity", "0.8");
+		d3.selectAll(".ward").style("opacity", "0.8");
+		d3.select("#c4sa_" + d.id).style("opacity", "1");
+		d3.selectAll(".party").classed("active", false);
+		
+		d3.select("#" + safe_id(winner.party)).classed("active", true);
+
 		d3.select("#c4sa_hoverblurb").text(winner.party + " " + Math.round(winner.perc * 100) + "%");
 		d3.select("#c4sa_hovername").text(d.id);
 		d3.select("#c4sa_demarcation_title").text(title);
 		
-		d3.select("#c4sa_section_24a_votes").text( num_format(d.properties.results.meta.section_24a_votes) );
-		d3.select("#c4sa_num_registered").text( num_format(d.properties.results.meta.num_registered) );
+		d3.select("#c4sa_section_24a_votes").text( num_format(results.meta.section_24a_votes) );
+		d3.select("#c4sa_num_registered").text( num_format(results.meta.num_registered) );
 		
-		d3.select("#c4sa_special_votes").text( num_format(d.properties.results.meta.special_votes) );
-		d3.select("#c4sa_spoilt_votes").text( num_format(d.properties.results.meta.spoilt_votes) );
-		d3.select("#c4sa_total_votes").text( num_format(d.properties.results.meta.total_votes) );
-		var total_votes = d.properties.results.meta.total_votes;
+		d3.select("#c4sa_special_votes").text( num_format(results.meta.special_votes) );
+		d3.select("#c4sa_spoilt_votes").text( num_format(results.meta.spoilt_votes) );
+		d3.select("#c4sa_total_votes").text( num_format(results.meta.total_votes) );
+		var total_votes = results.meta.total_votes;
 		// d3.select("#c4sa_vote_results").text("<tr><td>Party</td><td>Votes</td><td>Perc</td></tr>");
 		d3.select("#c4sa_vote_results").html("");
 		var tabsel = d3.select("#c4sa_vote_results")
 			.selectAll("tr")
-
-			.data(sort_votes(d.properties.results.vote_count));
+			.data(sort_votes(results.vote_count));
 		// console.log(tabsel.data());
 		var newtr = tabsel.enter()
 			.append("tr")
@@ -418,26 +415,34 @@ d3.json(apiurl + "2009/", function(error, data) {
 		tmp.push({ party: party, votes: data.results.vote_count[party] });
 		tot += data.results.vote_count[party];
 	}
-	tmp.sort(function(a, b) { console.log(a, b); if (a.votes < b.votes) return 1; return -1; });
+	tmp.sort(function(a, b) { if (a.votes < b.votes) return 1; return -1; });
+	var seat_count = 0;
 	var seatdivs = d3.select("#c4sa_seats_container").selectAll("div").data(tmp).enter().append("div").attr("class", "party").attr("id", function(d) { return safe_id(d.party) }).each(
-		function(d) { 
-			for(var x = 0; x < Math.floor(d.votes / tot * 400); x++) {
+		function(d) {
+			for(var x = 0; x < Math.round(d.votes / tot * 400); x++) {
+				seat_count++;
 				d3.select("#" + safe_id(d.party)).append("div").attr("class", "seat").style("background-color", function(d) {
 					return colors[d.party];
 				});
 			}
+			// console.log(seat_count);
 		}
 	).on("mousemove",
 		function(d) {
-
+			d3.selectAll("div.party").classed("active", false);
+			d3.select("#" + safe_id(d.party)).classed("active", true);
 			var el = d3.select("#c4sa_seats_overlay");
 			el.select("#c4sa_party").text(d.party);
 			el.select("#c4sa_seats_votes").text(num_format(d.votes));
-			el.select("#c4sa_seats_seats").text(Math.floor(d.votes / tot * 400));
+			el.select("#c4sa_seats_seats").text(Math.ceil(d.votes / tot * 400));
 			el.select("#c4sa_seats_percentage").text(perc_format(d.votes / tot));
 			el.style("display", "block");
 			el.style("top", (d3.event.pageY + 10) + "px");
-			el.style("left", (d3.event.pageX - 200) + "px");
+			el.style("left", (d3.event.pageX - 100) + "px");
+			d3.selectAll(".province").style("opacity", "0.8");
+			d3.selectAll(".municipality").style("opacity", "0.8");
+			d3.selectAll(".ward").style("opacity", "0.8");
+			d3.selectAll(".winner_" + safe_id(d.party)).style("opacity", "1");
 		}
 	).on("mouseout", function(d) {
 		d3.select("#c4sa_seats_overlay").style("display", "none");

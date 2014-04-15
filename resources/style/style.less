@@ -14,6 +14,7 @@
 		.province {
 			fill: #444;
 			stroke-width: 8;
+			opacity: 0.5;
 		}
 
 		.municipality {
@@ -114,7 +115,7 @@
 		background-color: #FFF;
 		padding: 10px;
 		border: 1px #CCC solid;
-		width: 400px;
+		width: 200px;
 		height: auto;
 		overflow: hidden;
 		display: none;
@@ -138,6 +139,13 @@
 			margin-right: 2px;
 			margin-bottom: 2px;
 			background-color: #444;
+			opacity: 0.5;
+		}
+
+		div.active {
+			.seat {
+				opacity: 1;
+			}
 		}
 	}
 
