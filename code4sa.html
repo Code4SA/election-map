@@ -9,16 +9,32 @@
 </head>
 <body id="Code4SA">
 	<div class="container">
+		<!-- <div class="row">
+			<div id="c4sa_year_container" class="col-md-12">
+				<a href="#2009" id="year_2009" class="year_container">2009</a>
+				<a href="#2014" id="year_2014" class="year_container">2014</a>
+			</div>
+		</div> -->
 		<div class="row">
+			<div class="col-md-12">
+				<h3>Parliamentary seats <span class="data-year"></span></h3>
+			</div>
 			<div id="c4sa_seats_container" class="col-md-12">
 			</div>
 			<div class="clearfix visible-xs"></div>
 		</div>
 		<div class="row">
 			<div id="c4sa_map_container">
+				<div class="col-md-12">
+					<h3>Provincial results <span class="data-year"></span></h3>
+				</div>
 			    <div class="col-md-12">
+			    	<div id="c4sa_loading_container">
+						<text id="progtext" style="text-anchor: middle;" dy="0.35em">0%</text>
+					</div>
+					
 			    	<div id="c4sa_resetdiv"><a id="c4sa_zoomout" href="#N,RSA" style="display:none" class="btn btn-primary">Zoom out</a></div>
-					<svg>
+					<svg id="c4sa_map_svg">
 						<g id="c4sa_map" class="level-0">
 							<g id="c4sa_province" class="level-0">
 								<g class="c4sa_area"></g>

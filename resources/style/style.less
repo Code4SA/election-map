@@ -1,4 +1,31 @@
 #Code4SA {
+	#c4sa_svg {
+		border: 1px #CCC solid;
+	}
+	#c4sa_loading_container {
+		position:fixed;
+		width:100%; 
+		height:100%;
+		top: 0px;
+			bottom: 0px;
+			left: 0px;
+			right: 0px;
+		background-color: rgba(256, 256, 256, 0.8);
+		text-align: center;
+		path#progback { stroke: none; fill: lightgray; }
+		path#progbar { stroke: none; fill: lightblue; }
+		#progtext { 
+			position: fixed;
+			top: 0px;
+			bottom: 0px;
+			left: 0px;
+			right: 0px;
+			width: 200px; 
+			height: 200px; 
+			margin: auto; 
+			font-size: 32px; 
+			font-weight: bold; }
+	}
 
 	#c4sa_map {
 		// padding-bottom: 400px;
@@ -14,7 +41,6 @@
 		.province {
 			fill: #444;
 			stroke-width: 8;
-			opacity: 0.5;
 		}
 
 		.municipality {
