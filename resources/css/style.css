@@ -11,14 +11,7 @@
   right: 0px;
   background-color: rgba(256, 256, 256, 0.8);
   text-align: center;
-}
-#Code4SA #c4sa_loading_container path#progback {
-  stroke: none;
-  fill: lightgray;
-}
-#Code4SA #c4sa_loading_container path#progbar {
-  stroke: none;
-  fill: lightblue;
+  z-index: 5000;
 }
 #Code4SA #c4sa_loading_container #progtext {
   position: fixed;
@@ -78,6 +71,7 @@
   position: absolute;
   margin-top: 10px;
   margin-left: 10px;
+  z-index: 6000;
 }
 #Code4SA #c4sa_hovertext {
   position: absolute;

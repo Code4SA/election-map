@@ -7,91 +7,13 @@
 	<link rel="stylesheet" href="resources/css/bootstrap.css">
 	<link rel="stylesheet" href="resources/css/style.css">
 </head>
-<body id="Code4SA">
-	<div class="container">
-		<!-- <div class="row">
-			<div id="c4sa_year_container" class="col-md-12">
-				<a href="#2009" id="year_2009" class="year_container">2009</a>
-				<a href="#2014" id="year_2014" class="year_container">2014</a>
-			</div>
-		</div> -->
-		<div class="row">
-			<div class="col-md-12">
-				<h3>Parliamentary seats <span class="data-year"></span></h3>
-			</div>
-			<div id="c4sa_seats_container" class="col-md-12">
-			</div>
-			<div class="clearfix visible-xs"></div>
-		</div>
-		<div class="row">
-			<div id="c4sa_map_container">
-				<div class="col-md-12">
-					<h3>Provincial results <span class="data-year"></span></h3>
-				</div>
-			    <div class="col-md-12">
-			    	<div id="c4sa_loading_container">
-						<text id="progtext" style="text-anchor: middle;" dy="0.35em">0%</text>
-					</div>
-					
-			    	<div id="c4sa_resetdiv"><a id="c4sa_zoomout" href="#N,RSA" style="display:none" class="btn btn-primary">Zoom out</a></div>
-					<svg id="c4sa_map_svg">
-						<g id="c4sa_map" class="level-0">
-							<g id="c4sa_province" class="level-0">
-								<g class="c4sa_area"></g>
-								<g class="c4sa_border"></g>
-							</g>
-							<g id="c4sa_municipality" class="level-1">
-								<g class="c4sa_area"></g>
-								<g class="c4sa_border"></g>
-							</g>
-							<g id="c4sa_ward" class="level-2">
-								<g class="c4sa_area"></g>
-								<g class="c4sa_border"></g>
-							</g>
-							<g id="c4sa_areas"></g>
-							<g id="c4sa_hoverph"></g>
-							<g id="c4sa_borders"></g>
-						</g>
-					</svg>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div id="c4sa_overlay">
-		<h3 id="c4sa_demarcation_title"></h3>
-		<table class="table">
-			<tr>
-				<th>Registered</th>
-				<th>Spoilt</th>
-				<th>Total</th>
-				<th>% of National</th>
-			</tr>
-			<tr>
-				<td class="metadata" id="c4sa_num_registered" data-src="num_registered"></td>
-				<td class="metadata" id="c4sa_spoilt_votes" data-src="spoilt_votes"></td>
-				<td class="metadata" id="c4sa_total_votes" data-src="total_votes"></td>
-				<td></td>
-			</tr>
-		<table class="table table-striped"><tbody id="c4sa_vote_results" ></tbody></table>
-	</div>
-	<div id="c4sa_seats_overlay">
-		<h3 id="c4sa_party"></h3>
-		<table class="table">
-			<tr>
-				<th>Votes</th>
-				<th>Seats</th>
-				<th>Percentage</th>
-			</tr>
-			<tr>
-				<td id="c4sa_seats_votes"></td>
-				<td id="c4sa_seats_seats"></td>
-				<td id="c4sa_seats_percentage"></td>
-			</tr>
-		</table>
-	</div>
-	<script src="resources/d3/d3.v3.min.js" type="text/javascript"></script>
-	<script src="resources/d3/topojson.v1.min.js" type="text/javascript"></script>
-	<script src="resources/d3/queue.v1.min.js"></script>
-	<script src="code4sa.js" type="text/javascript"></script>
+<body >
+
+	<div id="Code4SA"></div>
+	
+	<script src="code4sa-ck.js" type="text/javascript"></script>
+	<script>
+		Code4SA.Map.deploy();
+	</script>
 </body>
 </html>
