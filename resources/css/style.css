@@ -100,7 +100,7 @@
   pointer-events: none;
 }
 #Code4SA .overlay {
-  position: fixed;
+  position: absolute;
   background-color: #FFF;
   padding: 10px;
   border: 1px #CCC solid;
@@ -109,6 +109,9 @@
   display: none;
   font-size: 9pt;
   z-index: 5000;
+  top: 0px;
+  left: 0px;
+  margin: 0px;
 }
 #Code4SA .overlay h3 {
   margin: 0px auto;
@@ -132,6 +135,18 @@
 }
 #Code4SA #c4sa_seats_overlay {
   width: 200px;
+}
+#Code4SA #c4sa_seats_container:before,
+#Code4SA #c4sa_seats_container:after {
+  content: "";
+  display: table;
+}
+#Code4SA #c4sa_seats_container:after {
+  clear: both;
+}
+#Code4SA #c4sa_seats_container {
+  zoom: 1;
+  /* For IE 6/7 (trigger hasLayout) */
 }
 #Code4SA #c4sa_seats_container .seat {
   width: 10px;

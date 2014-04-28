@@ -47,10 +47,10 @@ Code4SA.Map = (function(window,document,undefined) {
 		
 		if (settings.showSeats) {
 			// Parliamentary Seats
-			var seats_el = el.insert("div").classed("row", true);
+			var seats_el = el.insert("div").classed("row", true).classed("clearfix", true).attr("id", "c4sa_seats");
 			seats_el.insert("div").classed("col-md-12", true).insert("h3").html(settings.seatsTitle);
-			seats_el.insert("div").attr("id", "c4sa_seats_container").classed("col-md-12", true);
-			seats_el.insert("div").attr("class", "clearfix visible-xs");
+			seats_el.insert("div").attr("id", "c4sa_seats_container").classed("col-md-12", true).classed("clearfix visible-xs", true);
+			// seats_el;
 
 			// Seats overlay
 			var seats_overlay = el.insert("div").attr("id", "c4sa_seats_overlay").classed("overlay", true);
@@ -552,6 +552,8 @@ Code4SA.Map = (function(window,document,undefined) {
 				}
 			).on("mousemove",
 				function(d) {
+					
+
 					d3.selectAll("div.party").classed("active", false);
 					d3.select("#" + safe_id(d.party)).classed("active", true);
 					var el = d3.select("#c4sa_seats_overlay");
@@ -560,8 +562,22 @@ Code4SA.Map = (function(window,document,undefined) {
 					el.select("#c4sa_seats_seats").text(Math.ceil(d.votes / tot * 400));
 					el.select("#c4sa_seats_percentage").text(perc_format(d.votes / tot));
 					el.style("display", "block");
-					el.style("top", (d3.event.pageY + 10) + "px");
-					el.style("left", (d3.event.pageX - 100) + "px");
+					// console.log(d3.select("#c4sa_seats")[0][0].clientHeight);
+					console.log(d3.event.layerY, d3.select("#c4sa_seats")[0][0].clientHeight );
+					if (d3.event.layerY < (d3.select("#c4sa_seats")[0][0].clientHeight )) {
+						el.style("top", (d3.event.layerY + 10) + "px");
+					} else {
+						el.style("top", (d3.event.layerY - 100) + "px");
+					}
+
+					if (d3.event.layerX < 110) {
+						el.style("left", "10px");
+					} else if (d3.event.layerX > (d3.select("#c4sa_seats_container")[0][0].clientWidth - 120)) {
+						el.style("left", (d3.select("#c4sa_seats_container")[0][0].clientWidth - 210) + "px");
+					} else {
+						el.style("left", (d3.event.layerX - 100) + "px");
+					}
+					
 					d3.selectAll(".province").style("opacity", "0.8");
 					d3.selectAll(".municipality").style("opacity", "0.8");
 					d3.selectAll(".ward").style("opacity", "0.8");
@@ -573,7 +589,9 @@ Code4SA.Map = (function(window,document,undefined) {
 		});
 	}
 
-	
+	function display_seats_overlay(d) {
+		
+	}
 
 	function merge(obj1, obj2) {
 		for (key in obj2) {
