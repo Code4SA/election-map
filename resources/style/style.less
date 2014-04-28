@@ -1,7 +1,16 @@
 #Code4SA {
+
 	#c4sa_svg {
 		border: 1px #CCC solid;
 	}
+
+	#c4sa_logo {
+		font-size: 8pt;
+		text-align: right;
+		color: #558800;
+		float: right;
+	}
+
 	#c4sa_loading_container {
 		position:fixed;
 		width:100%; 
@@ -116,44 +125,48 @@
 
 	.border { fill: none; stroke: white; stroke-linejoin: round; stroke-linecap:round; pointer-events: none;  }
 
-	#c4sa_overlay {
-		position: absolute;
+	
+
+	.overlay {
+		position: fixed;
 		background-color: #FFF;
 		padding: 10px;
 		border: 1px #CCC solid;
-		width: 400px;
 		height: auto;
 		overflow: hidden;
 		display: none;
 		font-size: 9pt;
+		z-index: 5000;
 
 		h3 {
 			margin: 0px auto;
+			line-height: 1em;
 		}
 
 		table {
 			margin-bottom: 0px;
+			tr {
+				th {
+					border-bottom: 1px #444 solid;
+					padding: 2px 5px;
+					text-align: center;
+				}
+
+				td {
+					padding: 2px 5px;
+					background-color: #EEE;
+					border: 1px #FFF solid;
+				}
+			}
 		}
 	}
 
+	#c4sa_overlay {
+		width: 400px;
+	}
+
 	#c4sa_seats_overlay {
-		position: absolute;
-		background-color: #FFF;
-		padding: 10px;
-		border: 1px #CCC solid;
 		width: 200px;
-		height: auto;
-		overflow: hidden;
-		display: none;
-		font-size: 9pt;
-
-		h3 {
-			margin: 0px auto;
-		}
-
-		table {
-			margin-bottom: 0px;
-		}
 	}
 
 	#c4sa_seats_container {

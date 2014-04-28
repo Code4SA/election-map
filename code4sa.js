@@ -1,47 +1,25 @@
-var Code4SA = {};
 //Namespace
-
-Code4SA.Framework = (function(window,document,undefined) {
-	var settings = {
-		bindToElementId: "code4sa",
-		project: "test",
-		apiKey: ""
-	};
-
-	var el = null;
-
-	//Private Methods
-	var bindEl = function() {
-		el = document.getElementById(settings.bindToElementId);
-		Code4SA.template.render(el);
-	};
-
-	return {
-	//Public Methods
-		deploy: function(project) {
-			bindEl();
-			settings.project = project;
-			el.className += "code4sa_deploy";
-			// console.log(el, settings);
-			Code4SA.app.init();
-		}
-	};
-
-})(this, this.document);
+var Code4SA = {};
 
 Code4SA.Map = (function(window,document,undefined) {
 
-	var year = "2009";
-	// var apiurl = "http://localhost:5000/provincial/";
-	// var mapurl = "http://localhost:8080/political/";
-	// var nationalurl = "http://localhost:5000/national/";
+	var settings = {
+		bindToElementId: "Code4SA",
+		showMap: true,
+		showSeats: true,
+		mapAPIUrl: "http://maps.code4sa.org",
+		electionsAPIUrl: "http://election-api.code4sa.org",
+		year: "2009",
+		width: 500,
+		height: 450,
+		colors: { "AFRICAN NATIONAL CONGRESS": "#008000", "DEMOCRATIC ALLIANCE": "#04599c", "INKATHA FREEDOM PARTY": "#911c1b", "INDEPENDENT DEMOCRATS": "#f87906", "CONGRESS OF THE PEOPLE": "#ffca08", "UNITED DEMOCRATIC MOVEMENT": "#770433", "VRYHEIDSFRONT PLUS": "#ff00a4", "AFRICAN CHRISTIAN DEMOCRATIC PARTY": "#adfc00", "UNITED CHRISTIAN DEMOCRATIC PARTY": "#AE00FF", "PAN AFRICANIST CONGRESS OF AZANIA": "#895E46", "MINORITY FRONT": "", "AZANIAN PEOPLE'S ORGANISATION": "#728915", "AFRICAN PEOPLE'S CONVENTION": "#895E46", "MOVEMENT DEMOCRATIC PARTY": "#4A5C72", "AL JAMA-AH": "#666", "ECONOMIC FREEDOM FIGHTERS": "#ed1b24" },
+		seatsTitle: "Parliamentary seats ",
+		mapTitle: "Provincial results ",
+	};
 
-	var apiurl = "http://iec-v2.code4sa.org/provincial/";
-	var mapurl = "http://maps.code4sa.org/political/";
-	var nationalurl = "http://iec-v2.code4sa.org/national/";
-
-	var width = 500;
-	var height = 450;
+	var apiurl = "http://localhost:5000/provincial/";
+	var mapurl = "http://localhost:8080/political/";
+	var nationalurl = "http://localhost:5000/national/";
 
 	var curCode = "";
 	var curBallot = "";
@@ -52,152 +30,113 @@ Code4SA.Map = (function(window,document,undefined) {
 	var num_format = d3.format(",");
 	var perc_format = d3.format(".2%");
 	var perc_format_short = d3.format(".0%");
-
-	var projection = d3.geo.conicEqualArea()
-	    .center([0, -28.5])
-	    .rotate([-24.5, 0])
-	    .parallels([-25.5, -31.5])
-	    .scale(1800)
-	    .translate([width/2, height/2]);
-
-	var path = d3.geo.path().projection(projection);
+	var path = false;
 
 	var svg = false;
-	// var svg = d3.select("div#c4sa_map_container").select("svg#c4sa_map_svg");
-	// svg.attr("viewBox", "0 0 " + width + " " + (height + 100)).attr("id", "c4sa_svg");
-
 	
-	// var selph = mapg.select("g#c4sa_selph");
-	// var hoverph = mapg.select("g#c4sa_hoverph");
-	// var borderg = mapg.select("g#c4sa_borders");
-
-
 	var level = 0;
 	var levels = ["province", "municipality", "ward"];
-	var levels_zoom = [1, 4, 15];
+
 	var wardscache = {};
 
 	var linear_scale = d3.scale.linear().domain([0.2, 1]);
 
-	// var colors = { "AFRICAN NATIONAL CONGRESS": 30, "DEMOCRATIC ALLIANCE": 190, "INKATHA FREEDOM PARTY": 270, "INDEPENDENT DEMOCRATS": 60, "CONGRESS OF THE PEOPLE": 90, "UNITED DEMOCRATIC MOVEMENT": 170 };
-
-	var colors = { "AFRICAN NATIONAL CONGRESS": "#008000", "DEMOCRATIC ALLIANCE": "#04599c", "INKATHA FREEDOM PARTY": "#911c1b", "INDEPENDENT DEMOCRATS": "#f87906", "CONGRESS OF THE PEOPLE": "#ffca08", "UNITED DEMOCRATIC MOVEMENT": "#770433", "VRYHEIDSFRONT PLUS": "#ff00a4", "AFRICAN CHRISTIAN DEMOCRATIC PARTY": "#adfc00", "UNITED CHRISTIAN DEMOCRATIC PARTY": "#AE00FF", "PAN AFRICANIST CONGRESS OF AZANIA": "#895E46", "MINORITY FRONT": "", "AZANIAN PEOPLE'S ORGANISATION": "#728915", "AFRICAN PEOPLE'S CONVENTION": "#895E46", "MOVEMENT DEMOCRATIC PARTY": "#4A5C72", "AL JAMA-AH": "#666", "ECONOMIC FREEDOM FIGHTERS": "#ed1b24" };
-
 	function render() {
 		// Renders the DOM
 		var el = d3.select("#"+settings.bindToElementId).append("div").attr("class", "container");
+		
+		if (settings.showSeats) {
+			// Parliamentary Seats
+			var seats_el = el.insert("div").classed("row", true);
+			seats_el.insert("div").classed("col-md-12", true).insert("h3").html(settings.seatsTitle);
+			seats_el.insert("div").attr("id", "c4sa_seats_container").classed("col-md-12", true);
+			seats_el.insert("div").attr("class", "clearfix visible-xs");
 
-		// Parliamentary Seats
-		var seats_el = el.insert("div").classed("row", true);
-		seats_el.insert("div").classed("col-md-12", true).insert("h3").html('Parliamentary seats <span class="data-year"></span>');
-		seats_el.insert("div").attr("id", "c4sa_seats_container").classed("col-md-12", true);
-		seats_el.insert("div").attr("class", "clearfix visible-xs");
+			// Seats overlay
+			var seats_overlay = el.insert("div").attr("id", "c4sa_seats_overlay").classed("overlay", true);
+			seats_overlay.insert("h3").attr("id", "c4sa_party");
+			var seats_el_fields = [
+				{ name: "Votes", id: "c4sa_seats_votes" },
+				{ name: "Seats", id: "c4sa_seats_seats" },
+				{ name: "Percentage", id: "c4sa_seats_percentage" },
+			];
+			var seats_overlay_table = seats_overlay.insert("table").classed("table", true);
+			seats_overlay_table.insert("tr").selectAll("th").data(seats_el_fields).enter()
+				.insert("th").text(function(d) { return d.name });
+			seats_overlay_table.insert("tr").selectAll("td").data(seats_el_fields).enter()
+				.insert("td").attr("id", function(d) { return d.id });
+		}
 		
 		
 
 		// Map
-		var map_el = el.insert("div").classed("row", true).attr("id", "c4sa_map_container");
+		if (settings.showMap) {
+			var map_el = el.insert("div").classed("row", true).attr("id", "c4sa_map_container");
 
-		map_el
-			.insert("div")
-			.classed("col-md-12", true)
-			.insert("h3")
-			.html('Provincial results <span class="data-year"></span>');
+			map_el
+				.insert("div")
+				.classed("col-md-12", true)
+				.insert("h3")
+				.html(settings.mapTitle);
 
 
-		svg_container = map_el.insert("div").classed("col-md-12", true);
-		//Zoom Out
-		var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary").text("Zoom out").on("click", zoomout);
-		svg = svg_container.insert("svg").attr("id", "c4sa_map_svg");
-		svg.attr("viewBox", "0 0 " + width + " " + (height + 100)).attr("id", "c4sa_svg");
+			svg_container = map_el.insert("div").classed("col-md-12", true);
+			//Zoom Out
+			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary").text("Zoom out").on("click", zoomout);
+			svg = svg_container.insert("svg").attr("id", "c4sa_map_svg");
+			svg.attr("viewBox", "0 0 " + settings.width + " " + (settings.height + 100)).attr("id", "c4sa_svg");
+			
+
+			mapg = svg.append("g").attr("id", "c4sa_map").classed("level-0", true);
+
+			mapg.append("g").attr("id", "c4sa_province").classed("level-0", true).append("g");
+			mapg.append("g").attr("id", "c4sa_municipality").classed("level-1", true).append("g");
+			mapg.append("g").attr("id", "c4sa_ward").classed("level-2", true).append("g");
+			mapg
+				.on("mousemove", move_overlay)
+				.on("mouseout", hide_overlay);
 		
 
-		mapg = svg.append("g").attr("id", "c4sa_map").classed("level-0", true);
+			// Loading overlay
+			el.insert("div").attr("id","c4sa_loading_container").insert("div").attr("id", "progtext").html("Loading");
 
-		mapg.append("g").attr("id", "c4sa_province").classed("level-0", true).append("g");
-		mapg.append("g").attr("id", "c4sa_municipality").classed("level-1", true).append("g");
-		mapg.append("g").attr("id", "c4sa_ward").classed("level-2", true).append("g");
-		mapg
-			.on("mousemove", move_overlay)
-			.on("mouseout", hide_overlay);
-		// <div class="row">
-		// 	<div id="c4sa_map_container">
-				
-		// 	    <div class="col-md-12">
-			    	
-					
-		// 	    	<div id="c4sa_resetdiv"><a id="c4sa_zoomout" href="#N,RSA" style="display:none" class="btn btn-primary">Zoom out</a></div>
-		// 			<svg id="c4sa_map_svg">
-		// 				<g id="c4sa_map" class="level-0">
-		// 					<g id="c4sa_province" class="level-0">
-		// 						<g class="c4sa_area"></g>
-		// 						<g class="c4sa_border"></g>
-		// 					</g>
-		// 					<g id="c4sa_municipality" class="level-1">
-		// 						<g class="c4sa_area"></g>
-		// 						<g class="c4sa_border"></g>
-		// 					</g>
-		// 					<g id="c4sa_ward" class="level-2">
-		// 						<g class="c4sa_area"></g>
-		// 						<g class="c4sa_border"></g>
-		// 					</g>
-		// 					<g id="c4sa_areas"></g>
-		// 					<g id="c4sa_hoverph"></g>
-		// 					<g id="c4sa_borders"></g>
-		// 				</g>
-		// 			</svg>
-		// 		</div>
-		// 	</div>
-		// </div>
+			// Map results overlay
+			var overlay_el = el.insert("div").attr("id", "c4sa_overlay").classed("overlay", true);
+			overlay_el.insert("h3").attr("id", "c4sa_demarcation_title");
+			var overlay_el_fields = [
+				{name: "Registered", id: "c4sa_num_registered", field: "num_registered" },
+				{name: "Spoilt", id: "c4sa_spoilt_votes", field: "spoilt_votes" },
+				{name: "Total", id: "c4sa_total_votes", field: "total_votes" }
+			];
+			var overlay_table = overlay_el
+				.append("table").classed("table", true);
+			overlay_table
+				.append("tr")
+				.selectAll("th")
+				.data(overlay_el_fields)
+				.enter()
+					.append("th")
+					.html(function(d) { return d.name });
+			overlay_table
+				.append("tr")
+				.selectAll("td")
+				.data(overlay_el_fields)
+				.enter()
+					.append("td")
+					.classed("metadata", true)
+					.attr("id", function(d) { return d.id })
+					.attr("data-src", function(d) { return d.field });
+			overlay_el
+				.append("table").classed("table", true).classed("table-striped", true).append("tbody").attr("id", "c4sa_vote_results");
+		}
 
-		// Loading overlay
-		
-		el.insert("div").attr("id","c4sa_loading_container").insert("div").attr("id", "progtext").html("Loading");
-
-		// Map results overlay
-		var overlay_el = el.insert("div").attr("id", "c4sa_overlay");
-		overlay_el.insert("h3").attr("id", "c4sa_demarcation_title");
-		var overlay_el_fields = [
-			{name: "Registered", id: "c4sa_num_registered", field: "num_registered" },
-			{name: "Spoilt", id: "c4sa_spoilt_votes", field: "spoilt_votes" },
-			{name: "Total", id: "c4sa_total_votes", field: "total_votes" }
-		];
-		var overlay_table = overlay_el
-			.append("table").classed("table", true);
-		overlay_table
-			.append("tr")
-			.selectAll("th")
-			.data(overlay_el_fields)
-			.enter()
-				.append("th")
-				.html(function(d) { return d.name });
-		overlay_table
-			.append("tr")
-			.selectAll("td")
-			.data(overlay_el_fields)
-			.enter()
-				.append("td")
-				.classed("metadata", true)
-				.attr("id", function(d) { return d.id })
-				.attr("data-src", function(d) { return d.field });
-		overlay_el
-			.append("table").classed("table", true).classed("table-striped", true).append("tbody").attr("id", "c4sa_vote_results");
-		
-		// Seats overlay
-		var seats_overlay = el.insert("div").attr("id", "c4sa_seats_overlay");
-		seats_overlay.insert("h3").attr("id", "c4sa_party");
-		var seats_el_fields = [
-			{ name: "Votes", id: "c4sa_seats_votes" },
-			{ name: "Seats", id: "c4sa_seats_seats" },
-			{ name: "Percentage", id: "c4sa_seats_percentage" },
-		];
-		var seats_overlay_table = seats_overlay.insert("table").classed("table", true);
-		seats_overlay_table.insert("tr").selectAll("th").data(seats_el_fields).enter()
-			.insert("th").text(function(d) { return d.name });
-		seats_overlay_table.insert("tr").selectAll("td").data(seats_el_fields).enter()
-			.insert("td").attr("id", function(d) { return d.id });
-		
-	}
+		var logo = el.append("a").attr("href", "http://code4sa.org").attr("id", "c4sa_logo");
+		if (settings.showMap) {
+			logo.append("img").attr("src", "http://hood.code4sa.org/static/logo-184x100.png").attr("alt", "Code for South Africa");
+		} else {
+			logo.text("Code for South Africa");
+		}
+	} //Render
 
 	function update_map(sender, mapdata, data, demarcation) {
 		//Let's prep the area
@@ -253,10 +192,8 @@ Code4SA.Map = (function(window,document,undefined) {
 				.style("stroke-width", "0.1px");
 			hide_parents(sender);
 		}
-		
-
 		return true;
-	}
+	} //update_map
 
 
 	var events_queued = [];
@@ -281,7 +218,7 @@ Code4SA.Map = (function(window,document,undefined) {
 			});
 	}
 
-	var prev_angle = 0;
+	// var prev_angle = 0;
 	function updateprog(event_name, curr, total) {
 		// var progarc = d3.svg.arc().outerRadius(95).innerRadius(50).startAngle(0);
 		var tot = 0;
@@ -300,39 +237,43 @@ Code4SA.Map = (function(window,document,undefined) {
 	}
 
 	function init() {
-		init_seats();
-		d3.selectAll(".data-year").html(year);
-		show_loader();
-		var provinceurl = apiurl + year + "/province/";
-		var province_job = d3.json(mapurl + year + "/province?quantization=5000")
-			.on("progress", function(d) {
-				updateprog("Map", d3.event.loaded, d3.event.total);
-			});
-		var province_data_job = d3.json(provinceurl)
-			.on("progress", function(d) {
-				updateprog("Results", d3.event.loaded, d3.event.total);
-			});
-		queue()
-			.defer(province_job.get)
-			.defer(province_data_job.get)
-			.await(function (error, provinces, province_data) {
-				var demarcg = mapg.select("g#c4sa_province");
-				demarcg.selectAll("g").remove();
-				var area = demarcg.insert("g").attr("class", "c4sa_area");
-				var border = demarcg.insert("g").attr("class", "c4sa_border");
-				province_data = province_data.results;
-				update_map(false, provinces, province_data, "province");
-				hide_loader();
-			});
+		if (settings.showSeats) {
+			init_seats();
+		}
+		d3.selectAll(".data-year").html(settings.year);
+		if (settings.showMap) {
+			show_loader();
+			var provinceurl = apiurl + settings.year + "/province/";
+			var province_job = d3.json(mapurl + settings.year + "/province?quantization=5000")
+				.on("progress", function(d) {
+					updateprog("Map", d3.event.loaded, d3.event.total);
+				});
+			var province_data_job = d3.json(provinceurl)
+				.on("progress", function(d) {
+					updateprog("Results", d3.event.loaded, d3.event.total);
+				});
+			queue()
+				.defer(province_job.get)
+				.defer(province_data_job.get)
+				.await(function (error, provinces, province_data) {
+					var demarcg = mapg.select("g#c4sa_province");
+					demarcg.selectAll("g").remove();
+					var area = demarcg.insert("g").attr("class", "c4sa_area");
+					var border = demarcg.insert("g").attr("class", "c4sa_border");
+					province_data = province_data.results;
+					update_map(false, provinces, province_data, "province");
+					hide_loader();
+				});
+		}
 	}
 
 	d3.select("#year_2009").on("click", function() {
-		year = "2009";
+		settings.year = "2009";
 		init();
 	});
 
 	d3.select("#year_2014").on("click", function() {
-		year = "2014";
+		settings.year = "2014";
 		init();
 	});
 
@@ -342,11 +283,11 @@ Code4SA.Map = (function(window,document,undefined) {
 		show_loader();
 		if (level == 1) {
 			//Load Minicipalities
-			var municipality_job = d3.json(mapurl + year + "/municipality?quantization=3000&filter[province]=" + d.id)
+			var municipality_job = d3.json(mapurl + settings.year + "/municipality?quantization=3000&filter[province]=" + d.id)
 				.on("progress", function(d) {
 					updateprog("Results", d3.event.loaded, d3.event.total);
 				});
-			var municipality_data_job = d3.json(apiurl + year + "/municipality/?all_results=true&province=" + d.id)
+			var municipality_data_job = d3.json(apiurl + settings.year + "/municipality/?all_results=true&province=" + d.id)
 				.on("progress", function(d) {
 					updateprog("Results", d3.event.loaded, d3.event.total);
 				});
@@ -363,11 +304,11 @@ Code4SA.Map = (function(window,document,undefined) {
 		}
 		if (level == 2) {
 			//Load Wards
-			var ward_job = d3.json(mapurl + year + "/ward?quantization=3000&filter[municipality]=" + d.id)
+			var ward_job = d3.json(mapurl + settings.year + "/ward?quantization=3000&filter[municipality]=" + d.id)
 				.on("progress", function(d) {
 					updateprog("Results", d3.event.loaded, d3.event.total);
 				});
-			var ward_data_job = d3.json(apiurl + year + "/ward/?all_results=true&municipality=" + d.id)
+			var ward_data_job = d3.json(apiurl + settings.year + "/ward/?all_results=true&municipality=" + d.id)
 				.on("progress", function(d) {
 					updateprog("Results", d3.event.loaded, d3.event.total);
 				});
@@ -436,10 +377,10 @@ Code4SA.Map = (function(window,document,undefined) {
 		var bounds = path.bounds(d);
 		dx = bounds[1][0] - bounds[0][0];
 		dy = bounds[1][1] - bounds[0][1];
-		k = .8 / Math.max(dx / width, dy / height);
+		k = .8 / Math.max(dx / settings.width, dy / settings.height);
 		mapg.transition()
 			.duration(750)
-			.attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+			.attr("transform", "translate(" + settings.width / 2 + "," + settings.height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
 			.each("end", function() {
 				// hide_parents(d);
 			});
@@ -591,7 +532,7 @@ Code4SA.Map = (function(window,document,undefined) {
 
 	function init_seats() {
 		var seats=d3.select("#c4sa_seats_container");
-		d3.json(nationalurl + year + "/", function(error, data) {
+		d3.json(nationalurl + settings.year + "/", function(error, data) {
 			var tmp = [];
 			var tot = 0;
 			for (party in data.results.vote_count) {
@@ -632,13 +573,36 @@ Code4SA.Map = (function(window,document,undefined) {
 		});
 	}
 
-	var settings = {
-		bindToElementId: "Code4SA",
-	};
+	
+
+	function merge(obj1, obj2) {
+		for (key in obj2) {
+			if(typeof obj1[key] == "object") {
+				merge(obj1[key], obj2[key]);
+			}
+			obj1[key] = obj2[key];
+		}
+	}
 
 	return {
 	//Public Methods
-		deploy: function() {
+		deploy: function(newsettings) {
+			merge(settings, newsettings);
+			apiurl = settings.electionsAPIUrl + "/provincial/";
+			mapurl = settings.mapAPIUrl + "/political/";
+			nationalurl = settings.electionsAPIUrl + "/national/";
+			// year = settings.year;
+			var projection = d3.geo.conicEqualArea()
+				.center([0, -28.5])
+				.rotate([-24.5, 0])
+				.parallels([-25.5, -31.5])
+				.scale(1800)
+				.translate([settings.width/2, settings.height/2]);
+
+			path = d3.geo.path().projection(projection);
+			// width = settings.width;
+			// height = settings.height;
+			colors = settings.colors;
 			render();
 			init();
 		}
