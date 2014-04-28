@@ -563,7 +563,7 @@ Code4SA.Map = (function(window,document,undefined) {
 					el.select("#c4sa_seats_percentage").text(perc_format(d.votes / tot));
 					el.style("display", "block");
 					// console.log(d3.select("#c4sa_seats")[0][0].clientHeight);
-					console.log(d3.event.layerY, d3.select("#c4sa_seats")[0][0].clientHeight );
+					// console.log(d3.event.layerY, d3.select("#c4sa_seats")[0][0].clientHeight );
 					if (d3.event.layerY < (d3.select("#c4sa_seats")[0][0].clientHeight )) {
 						el.style("top", (d3.event.layerY + 10) + "px");
 					} else {
