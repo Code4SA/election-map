@@ -552,8 +552,6 @@ Code4SA.Map = (function(window,document,undefined) {
 				}
 			).on("mousemove",
 				function(d) {
-					
-
 					d3.selectAll("div.party").classed("active", false);
 					d3.select("#" + safe_id(d.party)).classed("active", true);
 					var el = d3.select("#c4sa_seats_overlay");
@@ -561,32 +559,35 @@ Code4SA.Map = (function(window,document,undefined) {
 					el.select("#c4sa_seats_votes").text(num_format(d.votes));
 					el.select("#c4sa_seats_seats").text(Math.ceil(d.votes / tot * 400));
 					el.select("#c4sa_seats_percentage").text(perc_format(d.votes / tot));
-					el.style("display", "block");
-					// console.log(d3.select("#c4sa_seats")[0][0].clientHeight);
-					// console.log(d3.event.layerY, d3.select("#c4sa_seats")[0][0].clientHeight );
-					if (d3.event.layerY < (d3.select("#c4sa_seats")[0][0].clientHeight )) {
-						el.style("top", (d3.event.layerY + 10) + "px");
-					} else {
-						el.style("top", (d3.event.layerY - 100) + "px");
-					}
-
-					if (d3.event.layerX < 110) {
-						el.style("left", "10px");
-					} else if (d3.event.layerX > (d3.select("#c4sa_seats_container")[0][0].clientWidth - 120)) {
-						el.style("left", (d3.select("#c4sa_seats_container")[0][0].clientWidth - 210) + "px");
-					} else {
-						el.style("left", (d3.event.layerX - 100) + "px");
-					}
-					
 					d3.selectAll(".province").style("opacity", "0.8");
 					d3.selectAll(".municipality").style("opacity", "0.8");
 					d3.selectAll(".ward").style("opacity", "0.8");
 					d3.selectAll(".winner_" + safe_id(d.party)).style("opacity", "1");
 				}
-			).on("mouseout", function(d) {
-				d3.select("#c4sa_seats_overlay").style("display", "none");
-			});
+			)
 		});
+		d3.select("#c4sa_seats_container").on("mouseout", function(d) {
+			d3.select("#c4sa_seats_overlay").style("display", "none");
+		})
+		.on("mousemove", function(d) {
+			var el = d3.select("#c4sa_seats_overlay");
+			if (el.select("#c4sa_party").text()) {
+				el.style("display", "block");
+				if (d3.event.layerY < (d3.select("#c4sa_seats")[0][0].clientHeight )) {
+					el.style("top", (d3.event.layerY + 10) + "px");
+				} else {
+					el.style("top", (d3.event.layerY - 100) + "px");
+				}
+				if (d3.event.layerX < 110) {
+					el.style("left", "10px");
+				} else if (d3.event.layerX > (d3.select("#c4sa_seats_container")[0][0].clientWidth - 120)) {
+					el.style("left", (d3.select("#c4sa_seats_container")[0][0].clientWidth - 210) + "px");
+				} else {
+					el.style("left", (d3.event.layerX - 100) + "px");
+				}
+			}
+		});
+		;
 	}
 
 	function display_seats_overlay(d) {
