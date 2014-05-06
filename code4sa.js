@@ -207,6 +207,9 @@ Code4SA.Map = (function(window,document,undefined) {
 						topo[x].properties.results = data[y].results;
 						topo[x].properties.winner = calc_winners(data[y].results.vote_count);
 						topo[x].properties.winner.perc = topo[x].properties.winner.vote_count / data[y].results.meta.total_votes;
+						if (isNaN(topo[x].properties.winner.perc)) {
+							topo[x].properties.winner.perc = 0;
+						}
 					}
 				}
 				topo[x].properties.level = levels.indexOf(demarcation);
@@ -217,21 +220,22 @@ Code4SA.Map = (function(window,document,undefined) {
 			areas
 				.enter().append("path")
 				.attr("class", function(d) { 
-					if (d.properties.winner) {
+					if ((d.properties.winner) && (d.properties.winner.party)) {
 						var winner_id = safe_id(d.properties.winner.party);
 					} else {
 						var winner_id = "none";
 					}
 					return demarcation + " " + d.id + " " + "winner_" + winner_id; 
 				})
-				.style("fill", function(d, i) { 
-					if (d.properties.winner) {
+				.style("fill", function(d, i) {
+					if (d.properties.winner && !isNaN(d.properties.winner.perc) && (d.properties.winner.perc > 0)) {
+						
 						// return gen_pattern(d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc)), "party_" + 1); 
 						// return d3.rgb(colors[d.properties.winner.party]).brighter(linear_scale(d.properties.winner.perc)); 
 						return d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc))
 					} else {
 						// return gen_pattern("#444", "empty_" + i);
-						return("#888")
+						return("#CCC")
 					}
 				})
 				.attr("id", function(d) { return "c4sa_" + d.id })
@@ -606,10 +610,10 @@ Code4SA.Map = (function(window,document,undefined) {
 			d3.selectAll(".ward").style("opacity", "0.8");
 			d3.select("#c4sa_" + d.id).style("opacity", "1");
 			d3.selectAll(".party").classed("active", false);
-			
-			d3.select("#" + safe_id(winner.party)).classed("active", true);
-
-			d3.select("#c4sa_hoverblurb").text(winner.party + " " + Math.round(winner.perc * 100) + "%");
+			if (winner.party) {
+				d3.select("#" + safe_id(winner.party)).classed("active", true);
+				d3.select("#c4sa_hoverblurb").text(winner.party + " " + Math.round(winner.perc * 100) + "%");
+			}
 			d3.select("#c4sa_hovername").text(d.id);
 			d3.select("#c4sa_demarcation_title").text(title);
 			
@@ -626,7 +630,9 @@ Code4SA.Map = (function(window,document,undefined) {
 				.data(sort_votes(results.vote_count));
 			var newtr = tabsel.enter()
 				.append("tr")
-				.attr("class", function(d) { return "party row-" + d[0].replace(/\s/g, "_").toLowerCase(); });
+				.attr("class", function(d) {
+					return "party row-" + d[0].replace(/\s/g, "_").toLowerCase(); 
+				});
 			newtr.append("td").text(function (d) { return d[0]; });
 			newtr.append("td").text(function(d) { return num_format(d[1]) });
 			newtr.append("td").text(function(d) { return perc_format(d[1] / total_votes) })
@@ -647,6 +653,7 @@ Code4SA.Map = (function(window,document,undefined) {
 	function init_seats() {
 		var seats=d3.select("#c4sa_seats_container");
 		d3.json(nationalurl + settings.year + "/", function(error, data) {
+			// console.log(data);
 			var tmp = [];
 			var tot = 0;
 			for (party in data.results.vote_count) {
@@ -656,37 +663,46 @@ Code4SA.Map = (function(window,document,undefined) {
 			tmp.sort(function(a, b) { if (a.votes < b.votes) return 1; return -1; });
 
 			var seat_count = 0;
-			var seatdivs = d3.select("#c4sa_seats_container").selectAll("div").data(tmp).enter().append("div").attr("class", "party").attr("id", function(d) { return safe_id(d.party) }).each(
-				function(d) {
-					for(var x = 0; x < Math.round(d.votes / tot * 400); x++) {
-						seat_count++;
-						d3.select("#" + safe_id(d.party)).append("div").attr("class", "seat").style("background-color", function(d) {
-							return colors[d.party];
-						});
+			var seatdivs = d3.select("#c4sa_seats_container").selectAll("div").data(tmp).enter().append("div").attr("class", "party").attr("id", function(d) { 
+					return safe_id(d.party)
+				})
+				.each(
+					function(d) {
+						for(var x = 0; x < Math.round(d.votes / tot * 400); x++) {
+							seat_count++;
+							d3.select("#" + safe_id(d.party)).append("div").attr("class", "seat").style("background-color", function(d) {
+								return colors[d.party];
+							});
+						}
 					}
-				}
-			).on("mousemove",
-				function(d) {
-					d3.selectAll("div.party").classed("active", false);
-					d3.select("#" + safe_id(d.party)).classed("active", true);
-					var el = d3.select("#c4sa_seats_overlay");
-					el.select("#c4sa_party").text(d.party);
-					el.select("#c4sa_seats_votes").text(num_format(d.votes));
-					el.select("#c4sa_seats_seats").text(Math.ceil(d.votes / tot * 400));
-					el.select("#c4sa_seats_percentage").text(perc_format(d.votes / tot));
-					d3.selectAll(".province").style("opacity", "0.8");
-					d3.selectAll(".municipality").style("opacity", "0.8");
-					d3.selectAll(".ward").style("opacity", "0.8");
-					d3.selectAll(".winner_" + safe_id(d.party)).style("opacity", "1");
-				}
-			);
-			console.log(data)
+				).on("mousemove",
+					function(d) {
+						d3.selectAll("div.party").classed("active", false);
+						d3.select("#" + safe_id(d.party)).classed("active", true);
+						var el = d3.select("#c4sa_seats_overlay");
+						el.select("#c4sa_party").text(d.party);
+						el.select("#c4sa_seats_votes").text(num_format(d.votes));
+						el.select("#c4sa_seats_seats").text(Math.ceil(d.votes / tot * 400));
+						el.select("#c4sa_seats_percentage").text(perc_format(d.votes / tot));
+						d3.selectAll(".province").style("opacity", "0.8");
+						d3.selectAll(".municipality").style("opacity", "0.8");
+						d3.selectAll(".ward").style("opacity", "0.8");
+						d3.selectAll(".winner_" + safe_id(d.party)).style("opacity", "1");
+					}
+				);
+
 			d3.select("#results_table")
 				.selectAll("tr")
 				.data(tmp, function(d, i) { return d + i; })
 				.enter()
 				.append("tr")
-				.html(function(d) {return "<td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(d.votes / data.results.meta.total_votes) + "</td>"; });
+				.html(function(d) {
+					p = 0;
+					if (d.votes > 0) {
+						var p = d.votes / data.results.meta.total_votes;
+					}
+					return "<td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
+				});
 
 		});
 		d3.select("#c4sa_seats_container").on("mouseout", function(d) {
@@ -710,11 +726,6 @@ Code4SA.Map = (function(window,document,undefined) {
 				}
 			}
 		});
-		;
-	}
-
-	function display_seats_overlay(d) {
-		
 	}
 
 	function merge(obj1, obj2) {
