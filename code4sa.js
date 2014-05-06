@@ -392,7 +392,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		show_loader();
 		if (level == 1) {
 			//Load Minicipalities
-			var municipality_job = d3.json(mapurl + settings.year + "/municipality?quantization=3000&filter[province]=" + d.id)
+			var municipality_job = d3.json(mapurl + "2011/municipality?quantization=3000&filter[province]=" + d.id) //Always use 2011 map for municipal because 2006 municipal map is pants
 				.on("progress", function(d) {
 					updateprog("Results", d3.event.loaded, d3.event.total);
 				});
