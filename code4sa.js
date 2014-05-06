@@ -41,6 +41,17 @@ Code4SA.Map = (function(window,document,undefined) {
 
 	var linear_scale = d3.scale.linear().domain([0.2, 1]);
 
+	// var projection = d3.geo.conicEqualArea()
+	// 	.center([0, -28.5])
+	// 	.rotate([-24.5, 0])
+	// 	.parallels([-25.5, -31.5])
+	// 	.scale(1800)
+	// 	.translate([settings.width/2, settings.height/2]);
+	var projection = d3.geo.mercator()
+		.scale(1800)
+		.center([23, -28.5])
+		.translate([settings.width / 2, settings.height / 2]);
+
 	function render() {
 		// Renders the DOM
 		var el = d3.select("#"+settings.bindToElementId).append("div").attr("class", "container");
@@ -83,7 +94,22 @@ Code4SA.Map = (function(window,document,undefined) {
 			svg_container = map_el.insert("div").classed("col-md-12", true);
 			//Zoom Out
 			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary").text("Zoom out").on("click", zoomout);
+
+			// Results Table
+			var results_table = svg_container.insert("table").attr("id", "results_table")
+				.classed("table", true);
+			results_table
+				.append("tr")
+				.selectAll("th")
+				.data(["Leaderboard"])
+				.enter()
+					.append("th")
+					.html(function(d) { return d });
+					
 			svg = svg_container.insert("svg").attr("id", "c4sa_map_svg");
+			svg.append('defs').append('pattern');
+			
+
 			svg.attr("viewBox", "0 0 " + settings.width + " " + (settings.height + 100)).attr("id", "c4sa_svg");
 			
 
@@ -95,7 +121,6 @@ Code4SA.Map = (function(window,document,undefined) {
 			mapg
 				.on("mousemove", move_overlay)
 				.on("mouseout", hide_overlay);
-		
 
 			// Loading overlay
 			el.insert("div").attr("id","c4sa_loading_container").insert("div").attr("id", "progtext").html("Loading");
@@ -128,6 +153,8 @@ Code4SA.Map = (function(window,document,undefined) {
 					.attr("data-src", function(d) { return d.field });
 			overlay_el
 				.append("table").classed("table", true).classed("table-striped", true).append("tbody").attr("id", "c4sa_vote_results");
+
+
 		}
 
 		var logo = el.append("a").attr("href", "http://code4sa.org").attr("id", "c4sa_logo");
@@ -136,16 +163,43 @@ Code4SA.Map = (function(window,document,undefined) {
 		} else {
 			logo.text("Code for South Africa");
 		}
+
+		
+		// var results_table = mapg.append()
 	} //Render
 
+	// function gen_pattern(color, uid) {
+	// 	var pattern_container = svg.select("defs")
+	// 		.append("pattern")
+	// 		.attr('id', 'pattern_' + uid)
+	// 		.attr('patternUnits', 'userSpaceOnUse')
+	// 		// .attr('fill', "#FF0000")
+	// 		.attr("patternTransform", "rotate(45 0 0)")
+	// 		.attr('width', 5)
+	// 		.attr('height', 10)
+	// 	pattern_container
+	// 		.append('path')
+	// 		.attr('d', 'M0,0 L0,10 z')
+	// 		.attr('stroke', color)
+	// 		.attr("fill", "red")
+	// 		.attr('stroke-width', 1)
+	// 	// pattern_container
+	// 	// 	.append('path')
+	// 	// 	.attr("fill", "#FF9900");
+	// 	// console.log("url(#pattern_"+uid+")");
+	// 	return "url(#pattern_"+uid+")";
+	// }
+
 	function update_map(sender, mapdata, data, demarcation) {
-		//Let's prep the area
-		var demarcg = mapg.select("g#c4sa_" + demarcation);
-		demarcg.selectAll("g").remove();
-		var area = demarcg.insert("g").attr("class", "c4sa_area");
-		var border = demarcg.insert("g").attr("class", "c4sa_border");
+
 		//Add some data
 		if (mapdata) {
+			//Let's prep the area
+			var demarcg = mapg.select("g#c4sa_" + demarcation);
+			demarcg.selectAll("g").remove();
+			var area = demarcg.insert("g").attr("class", "c4sa_area");
+			var border = demarcg.insert("g").attr("class", "c4sa_border");
+			var textual = demarcg.insert("g").attr("class", "c4sa_textual");
 			var topo = topojson.feature(mapdata, mapdata.objects.demarcation).features;
 			for(var x = 0; x < topo.length; x++) {
 				for(var y = 0; y < data.length; y++) {
@@ -158,38 +212,92 @@ Code4SA.Map = (function(window,document,undefined) {
 				topo[x].properties.level = levels.indexOf(demarcation);
 			}
 
+			//Plot our areas
+			var areas = area.selectAll("." + demarcation).data(topo);
+			areas
+				.enter().append("path")
+				.attr("class", function(d) { 
+					if (d.properties.winner) {
+						var winner_id = safe_id(d.properties.winner.party);
+					} else {
+						var winner_id = "none";
+					}
+					return demarcation + " " + d.id + " " + "winner_" + winner_id; 
+				})
+				.style("fill", function(d, i) { 
+					if (d.properties.winner) {
+						// return gen_pattern(d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc)), "party_" + 1); 
+						// return d3.rgb(colors[d.properties.winner.party]).brighter(linear_scale(d.properties.winner.perc)); 
+						return d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc))
+					} else {
+						// return gen_pattern("#444", "empty_" + i);
+						return("#888")
+					}
+				})
+				.attr("id", function(d) { return "c4sa_" + d.id })
+				.attr("d", path)
+				.on("click", zoomin)
+				.on("mousemove", hovered)
+				.on("mouseout", unhovered);
 
-		//Plot our areas
-		var areas = area.selectAll("." + demarcation).data(topo);
-		areas
-			.enter().append("path")
-			.attr("class", function(d) { 
-				if (d.properties.winner) {
-					var winner_id = safe_id(d.properties.winner.party);
-				} else {
-					var winner_id = "none";
-				}
-				return demarcation + " " + d.id + " " + "winner_" + winner_id; 
-			})
-			.style("fill", function(d) { 
-				if (d.properties.winner) {
-					return d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc)); 
-					// return d3.rgb(colors[d.properties.winner.party]).brighter(linear_scale(d.properties.winner.perc)); 
-				} else {
-					return "#444";
-				}
-			})
-			.attr("id", function(d) { return "c4sa_" + d.id })
-			.attr("d", path)
-			.on("click", zoomin)
-			.on("mousemove", hovered)
-			.on("mouseout", unhovered);
 			//Chuck on a border
 			var stroke = border.append("path")
 				.datum(topojson.mesh(mapdata, mapdata.objects.demarcation, function (a, b){ return a !== b; }))
 				.attr("class", "border " + demarcation + "-border")
 				.attr("d", path)
 				.style("stroke-width", "0.1px");
+
+			//Let's put some text on there
+			if (level == 0) {
+				var txt = textual.selectAll(".province-label")
+					.data(topo)
+					.enter()
+					.append("text")
+					.attr("class", "province-label")
+					.attr("transform", function(d) {
+						return "translate(" + path.centroid(d) + ")";
+					})
+					.attr("text-anchor", "middle")
+					.attr("dy", ".35em")
+					.text(function(d) { 
+						if (d.properties.province_name) {
+							// console.log(d.properties);
+							return d.properties.province_name; 
+						} else {
+							return "NA";
+						}
+					});
+			} else if (level == 1) {
+				var txt = textual.selectAll(".place-label")
+					.data(topo)
+					.enter()
+					.append("text")
+					.attr("class", "place-label")
+					.attr("transform", function(d) {
+						return "translate(" + path.centroid(d) + ")";
+					})
+					.attr("text-anchor", "middle")
+					.attr("dy", ".35em")
+					
+					.text(function(d) { 
+						if (d.properties.municipality_name) {
+							// console.log(d.properties.municipality_name);
+							return d.properties.municipality_name; 
+						} else {
+							return "NA";
+						}
+					})
+					.style("font-size", function(d) {
+						var b = path.bounds(d);
+						var w = b[1][0] - b[0][0];
+						if (w < 10) {
+							return "2px";
+						}
+						// console.log(w, Math.min((w - 8) / this.getComputedTextLength() * 10), d.properties.municipality_name) ;
+						return Math.min(4, (w - 8) / this.getComputedTextLength() * 12)  + "px"; 
+					})
+					;
+			}
 			hide_parents(sender);
 		}
 		return true;
@@ -260,6 +368,7 @@ Code4SA.Map = (function(window,document,undefined) {
 					demarcg.selectAll("g").remove();
 					var area = demarcg.insert("g").attr("class", "c4sa_area");
 					var border = demarcg.insert("g").attr("class", "c4sa_border");
+					var textlayer = demarcg.insert("g").attr("class", "c4sa_textual");
 					province_data = province_data.results;
 					update_map(false, provinces, province_data, "province");
 					hide_loader();
@@ -384,7 +493,12 @@ Code4SA.Map = (function(window,document,undefined) {
 			.each("end", function() {
 				// hide_parents(d);
 			});
+
 		mapg.attr("class", "level-" + level);
+		// console.log(k);
+		// svg.selectAll(".c4sa_textual")
+		// 	.style("font-size", "2px")
+		// 	.attr("blah", function(d) { console.log(d) });
 	}
 
 	
@@ -540,6 +654,7 @@ Code4SA.Map = (function(window,document,undefined) {
 				tot += data.results.vote_count[party];
 			}
 			tmp.sort(function(a, b) { if (a.votes < b.votes) return 1; return -1; });
+
 			var seat_count = 0;
 			var seatdivs = d3.select("#c4sa_seats_container").selectAll("div").data(tmp).enter().append("div").attr("class", "party").attr("id", function(d) { return safe_id(d.party) }).each(
 				function(d) {
@@ -564,7 +679,15 @@ Code4SA.Map = (function(window,document,undefined) {
 					d3.selectAll(".ward").style("opacity", "0.8");
 					d3.selectAll(".winner_" + safe_id(d.party)).style("opacity", "1");
 				}
-			)
+			);
+			console.log(data)
+			d3.select("#results_table")
+				.selectAll("tr")
+				.data(tmp, function(d, i) { return d + i; })
+				.enter()
+				.append("tr")
+				.html(function(d) {return "<td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(d.votes / data.results.meta.total_votes) + "</td>"; });
+
 		});
 		d3.select("#c4sa_seats_container").on("mouseout", function(d) {
 			d3.select("#c4sa_seats_overlay").style("display", "none");
@@ -611,12 +734,7 @@ Code4SA.Map = (function(window,document,undefined) {
 			mapurl = settings.mapAPIUrl + "/political/";
 			nationalurl = settings.electionsAPIUrl + "/national/";
 			// year = settings.year;
-			var projection = d3.geo.conicEqualArea()
-				.center([0, -28.5])
-				.rotate([-24.5, 0])
-				.parallels([-25.5, -31.5])
-				.scale(1800)
-				.translate([settings.width/2, settings.height/2]);
+			
 
 			path = d3.geo.path().projection(projection);
 			// width = settings.width;

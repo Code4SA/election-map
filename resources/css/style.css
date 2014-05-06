@@ -1,3 +1,8 @@
+#Code4SA {
+  font-size: 9pt;
+  font-family: "Helvetica", arial, sans-serif;
+  line-height: 1.5;
+}
 #Code4SA #c4sa_svg {
   border: 1px #CCC solid;
 }
@@ -15,7 +20,7 @@
   bottom: 0px;
   left: 0px;
   right: 0px;
-  background-color: rgba(256, 256, 256, 0.8);
+  background-color: rgba(0, 0, 0, 0.1);
   text-align: center;
   z-index: 5000;
 }
@@ -30,6 +35,7 @@
   margin: auto;
   font-size: 32px;
   font-weight: bold;
+  color: #000;
 }
 #Code4SA #c4sa_map {
   cursor: pointer;
@@ -161,4 +167,33 @@
 }
 #Code4SA #c4sa_seats_container div.active .seat {
   opacity: 1;
+}
+#Code4SA #c4sa_zoomout {
+  background-color: #CCC;
+  padding: 2px 6px;
+  border: 1px #444 solid;
+  cursor: pointer;
+}
+#Code4SA #results_table {
+  position: absolute;
+  margin-top: 40px;
+  margin-left: 10px;
+  border: 1px #ccc solid;
+  min-width: 200px;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+#Code4SA .province-label {
+  font-size: 1em;
+  font-weight: bold;
+  fill: #000;
+  fill-opacity: 0.4;
+  pointer-events: none;
+}
+#Code4SA .place-label {
+  pointer-events: none;
+  fill: #333;
+  opacity: 1;
+}
+#Code4SA #c4sa_map.level-3 .place-label {
+  opacity: 0;
 }
