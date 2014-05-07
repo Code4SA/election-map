@@ -419,10 +419,10 @@ Code4SA.Map = (function(window,document,undefined) {
 					.text(function(d) { 
 						if (d.properties.municipality_name) {
 							var s = d.properties.municipality_name;
-							if (d.properties.results.meta.vote_complete < 100) {
+							if ((d.properties.results) && (d.properties.results.meta.vote_complete < 100)) {
 								s += " (" + d.properties.results.meta.vote_complete + "%)";
 							}
-							return s; 
+							return s;
 						} else {
 							return "";
 						}
@@ -433,8 +433,10 @@ Code4SA.Map = (function(window,document,undefined) {
 						if (w < 10) {
 							return "2px";
 						}
+						var size = Math.min(4, (w - 8) / this.getComputedTextLength() * 12);
+						// console.log(size);
 						// console.log(w, Math.min((w - 8) / this.getComputedTextLength() * 10), d.properties.municipality_name) ;
-						return Math.min(4, (w - 8) / this.getComputedTextLength() * 12)  + "px"; 
+						return  size + "px"; 
 					})
 					.attr("id", function(d) {
 						return "c4sa_text_"+d.properties.municipality;
