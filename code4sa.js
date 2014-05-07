@@ -717,7 +717,7 @@ Code4SA.Map = (function(window,document,undefined) {
 					if (d.votes > 0) {
 						var p = d.votes / data.results.meta.total_votes;
 					}
-					return "<td><img class='party-logo' src='resources/logos/"+ d.party.replace(/[^\w]/gi, "") + ".jpg' /></td><td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
+					return "<td><img class='party-logo' src='resources/logos/small-"+ d.party.replace(/[^\w]/gi, "") + ".jpg' /></td><td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
 				});
 
 		});
