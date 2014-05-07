@@ -249,7 +249,9 @@ Code4SA.Map = (function(window,document,undefined) {
 			.defer(map_job.get)
 			.defer(data_job.get)
 			.await(function (error, map, data) {
-				update_map(map, data.results, levels[curlevel]);
+				if (!error) {
+					update_map(map, data.results, levels[curlevel]);
+				}
 				hide_loader();
 			});
 	}
@@ -271,6 +273,10 @@ Code4SA.Map = (function(window,document,undefined) {
 		d3.selectAll(".c4sa_btn_year").classed("btn-primary", false).classed("btn-default", true);
 		d3.select("#c4sa_btn_year_" + year).classed("btn-primary", true).classed("btn-default", false);
 		ga('send', 'event', 'change', 'year', year );
+		mapg.select("g#c4sa_municipality").selectAll("g").remove();
+		mapg.select("g#c4sa_ward").selectAll("g").remove();
+		
+		zoomout();
 	}
 
 	function update_data() {
