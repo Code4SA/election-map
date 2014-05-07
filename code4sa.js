@@ -40,6 +40,7 @@ Code4SA.Map = (function(window,document,undefined) {
 	var level = 0;
 	var levels = ["province", "municipality", "ward"];
 	var levels_quantization = [5000, 3000, 3000];
+	var province_names = { "EC": "Eastern Cape", "FS": "Free State", "GT": "Gauteng", "KZN": "KwaZulu-Natal", "LIM": "Limpopo", "MP": "Mpumalanga", "NC": "Northern Cape", "NW": "North West", "WC": "Western Cape"}
 
 	var wardscache = {};
 
@@ -88,44 +89,19 @@ Code4SA.Map = (function(window,document,undefined) {
 		if (settings.showMap) {
 			var map_el = el.insert("div").classed("row", true).attr("id", "c4sa_map_container");
 
-			map_el
-				.insert("div")
-				.classed("col-md-12", true)
+			svg_container = map_el.insert("div").classed("col-md-12", true);
+			svg_container
 				.insert("h3")
 				.html(settings.mapTitle);
-
-
-			svg_container = map_el.insert("div").classed("col-md-12", true);
 			//Zoom Out
 			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary pull-right").text("Zoom out").on("click", zoomout);
 
 			// Results Area
+			var actions_area = svg_container.insert("div").attr("id", "actions_area").classed("col-md-12", true);
 			var results_area = svg_container.insert("div").attr("id", "results_area").classed("col-md-4", true);
-			var year_area = results_area.insert("div").classed("row", true)
-				.insert("div").classed("col-md-6", true)
-				.insert("div").classed("btn-group", true)
-				;
-			year_area.insert("button").attr("type", "button")
-				.text("2009")
-				.classed("btn", true)
-				.classed("btn-default", function() { return (settings.year != "2009") })
-				.classed("btn-primary", function() { return (settings.year == "2009") })
-				.classed("c4sa_btn_year", true)
-				.attr("id", "c4sa_btn_year_2009")
-				.on("click", function() { change_year("2009") })
-				;
-			year_area.insert("button").attr("type", "button")
-				.text("2014")
-				.classed("btn", true)
-				.classed("btn-default", function() { return (settings.year != "2014") })
-				.classed("btn-primary", function() { return (settings.year == "2014") })
-				.classed("c4sa_btn_year", true)
-				.attr("id", "c4sa_btn_year_2014")
-				.on("click", function() { change_year("2014") })
-				;
-			var btn_group = results_area.insert("div")
-				.classed("btn-group", true).classed("pull-right", true);
-
+			var btn_group = actions_area.insert("div")
+				.classed("col-md-4", true)
+				.classed("btn-group", true);
 			btn_group
 				.insert("div")
 				.attr("type", "button")
@@ -146,6 +122,54 @@ Code4SA.Map = (function(window,document,undefined) {
 				.attr("id", "c4sa_btn_ballot_provincial")
 				.on("click", function() { change_ballot("provincial") })
 				.text("Provincial");
+
+			btn_group.insert("button").attr("type", "button")
+				.text("2009")
+				.classed("btn", true)
+				.classed("btn-default", function() { return (settings.year != "2009") })
+				.classed("btn-primary", function() { return (settings.year == "2009") })
+				.classed("c4sa_btn_year", true)
+				.attr("id", "c4sa_btn_year_2009")
+				.on("click", function() { change_year("2009") })
+				;
+			btn_group.insert("button").attr("type", "button")
+				.text("2014")
+				.classed("btn", true)
+				.classed("btn-default", function() { return (settings.year != "2014") })
+				.classed("btn-primary", function() { return (settings.year == "2014") })
+				.classed("c4sa_btn_year", true)
+				.attr("id", "c4sa_btn_year_2014")
+				.on("click", function() { change_year("2014") })
+				;
+
+			var tmp = [];
+				for (key in province_names) {
+					tmp.push(key);
+				}
+			d3.select("#actions_area")
+					.append("div").classed("col-md-6", true)
+					.append("ul").classed("nav nav-pills", true)
+					.selectAll("li")
+					.data(tmp, function(i, d) { return i; })
+					.enter()
+					.append("li")
+					.classed("active", function(d, i) { return (i == 0) })
+					.append("a")
+					.attr("href", "#")
+					.text(function(d) { return d; })
+					.attr("id", "c4sa_")
+					.on("click", function(d, i) {
+						d3.select("#actions_area").selectAll("li").classed("active", false);
+						d3.select("#actions_area").selectAll("li").classed("active", function(dd, ii) { return (d == dd) });
+						var scrollItem = d3.select("#results_area").select("#c4sa_results_province_" + d)[0][0];
+						if (scrollItem) {
+							d3.select("#results_area").transition().duration(1000)
+								.tween("uniquetweenname", scrollTopTween(scrollItem.offsetTop));
+						}
+						var p = d3.select("#c4sa_" + d);
+						zoomin(p.data()[0]);
+					})
+					;
 
 			results_area.insert("table")
 				.classed("table", true).classed("table-striped", true);
@@ -494,6 +518,13 @@ Code4SA.Map = (function(window,document,undefined) {
 		if (level == 1) {
 			d3.selectAll(".province")
 				.style("display", "inherit");
+			d3.select("#actions_area").selectAll("li").classed("active", false);
+			d3.select("#actions_area").selectAll("li").classed("active", function(dd, ii) { return (d.id == dd) });
+			var scrollItem = d3.select("#results_area").select("#c4sa_results_province_" + d.id)[0][0];
+			if (scrollItem) {
+				d3.select("#results_area").transition().duration(1000)
+					.tween("uniquetweenname", scrollTopTween(scrollItem.offsetTop));
+			}
 		}
 		if (level == 2) {
 			d3.selectAll(".municipality")
@@ -663,6 +694,12 @@ Code4SA.Map = (function(window,document,undefined) {
 		hovering = false;
 	};
 
+	function scrollTopTween(scrollTop) {
+		return function() {
+			var i = d3.interpolateNumber(this.scrollTop, scrollTop);
+			return function(t) { this.scrollTop = i(t); };
+		};
+	}
 
 	function safe_id(s) {
 		return s.replace(/[^A-Za-z0-9]/g,"");
@@ -743,33 +780,79 @@ Code4SA.Map = (function(window,document,undefined) {
 	function update_results_table() {
 		// console.log("Updating results table");
 		// console.log(settings.electionsAPIUrl + "/" + settings.ballot + "/" + settings.year + "/");
-		d3.json(settings.electionsAPIUrl + "/" + settings.ballot + "/" + settings.year + "/", function(error, data) {
-			var tmp = [];
-			var tot = 0;
-			for (party in data.results.vote_count) {
-				tmp.push({ party: party, votes: data.results.vote_count[party] });
-				tot += data.results.vote_count[party];
-			}
-			tmp.sort(function(a, b) { if (a.votes < b.votes) return 1; return -1; });
-			d3.select("#results_area")
-				.select("table")
-				.remove();
-			d3.select("#results_area")
-				.append("table").classed("table table-striped", true)
-				.append("tbody")
-				.selectAll("tr")
-				.data(tmp, function(d, i) { return d + i; })
-				.enter()
-				.append("tr")
-				.html(function(d) {
-					p = 0;
-					if (d.votes > 0) {
-						var p = d.votes / data.results.meta.total_votes;
+		d3.select("#results_area")
+			.selectAll("table")
+			.remove();
+		d3.select("#results_area")
+			.selectAll("h4")
+			.remove();
+		// d3.select("#actions_area")
+		// 	.selectAll("ul")
+		// 	.remove();
+		if (settings.ballot == "national") {
+			var uri = settings.electionsAPIUrl + "/" + settings.ballot + "/" + settings.year + "/";
+			
+			d3.json(uri, function(error, data) {
+				var tmp = [];
+				var tot = 0;
+				for (party in data.results.vote_count) {
+					tmp.push({ party: party, votes: data.results.vote_count[party] });
+					tot += data.results.vote_count[party];
+				}
+				tmp.sort(function(a, b) { if (a.votes < b.votes) return 1; return -1; });
+				
+				d3.select("#results_area")
+					.append("table").classed("table table-striped", true)
+					.append("tbody")
+					.selectAll("tr")
+					.data(tmp, function(d, i) { return d + i; })
+					.enter()
+					.append("tr")
+					.html(function(d) {
+						p = 0;
+						if (d.votes > 0) {
+							var p = d.votes / data.results.meta.total_votes;
+						}
+						return "<td><img class='party-logo' src='resources/logos/small-"+ d.party.replace(/[^\w]/gi, "") + ".jpg' /></td><td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
+					});
+				}
+			);
+		} else {
+			var uri = settings.electionsAPIUrl + "/provincial/" + settings.year + "/province/?all_results=true";
+			d3.json(uri, function(error, data) {
+				
+				
+					// .classed()
+				for (province_id in data.results) {
+					var province = data.results[province_id];
+					d3.select("#results_area")
+						.append("h4")
+						.attr("id", "c4sa_results_province_" + province.province_id)
+						.html(province_names[province.province_id]);
+					var tmp = [];
+					var tot = 0;
+					for (party in province.results.vote_count) {
+						tmp.push({ party: party, votes: province.results.vote_count[party] });
+						tot += province.results.vote_count[party];
 					}
-					return "<td><img class='party-logo' src='resources/logos/small-"+ d.party.replace(/[^\w]/gi, "") + ".jpg' /></td><td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
-				});
-			}
-		);
+					tmp.sort(function(a, b) { if (a.votes < b.votes) return 1; return -1; });
+					d3.select("#results_area")
+						.append("table").classed("table table-striped", true)
+						.append("tbody")
+						.selectAll("tr")
+						.data(tmp, function(d, i) { return d + i; })
+						.enter()
+						.append("tr")
+						.html(function(d) {
+							p = 0;
+							if (d.votes > 0) {
+								var p = d.votes / province.results.meta.total_votes;
+							}
+							return "<td><img class='party-logo' src='resources/logos/small-"+ d.party.replace(/[^\w]/gi, "") + ".jpg' /></td><td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
+						});
+				}
+			});
+		}
 	}
 
 	function merge(obj1, obj2) {
