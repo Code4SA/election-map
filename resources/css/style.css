@@ -5323,7 +5323,7 @@ button#Code4SA .close {
 }
 #Code4SA #c4sa_resetdiv {
   position: absolute;
-  margin-top: 10px;
+  margin-top: 40px;
   right: 20px;
   z-index: 6000;
 }
