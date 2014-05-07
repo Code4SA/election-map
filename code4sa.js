@@ -10,7 +10,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		mapAPIUrl: "http://maps.code4sa.org",
 		electionsAPIUrl: "http://election-api.code4sa.org",
 		year: "2009",
-		width: 500,
+		width: 900,
 		height: 450,
 		colors: { "AFRICAN NATIONAL CONGRESS": "#008000", "DEMOCRATIC ALLIANCE": "#04599c", "INKATHA FREEDOM PARTY": "#911c1b", "INDEPENDENT DEMOCRATS": "#f87906", "CONGRESS OF THE PEOPLE": "#ffca08", "UNITED DEMOCRATIC MOVEMENT": "#770433", "VRYHEIDSFRONT PLUS": "#ff00a4", "AFRICAN CHRISTIAN DEMOCRATIC PARTY": "#adfc00", "UNITED CHRISTIAN DEMOCRATIC PARTY": "#AE00FF", "PAN AFRICANIST CONGRESS OF AZANIA": "#895E46", "MINORITY FRONT": "", "AZANIAN PEOPLE'S ORGANISATION": "#728915", "AFRICAN PEOPLE'S CONVENTION": "#895E46", "MOVEMENT DEMOCRATIC PARTY": "#4A5C72", "AL JAMA-AH": "#666", "ECONOMIC FREEDOM FIGHTERS": "#ed1b24" },
 		seatsTitle: "Parliamentary seats ",
@@ -53,7 +53,7 @@ Code4SA.Map = (function(window,document,undefined) {
 	// 	.translate([settings.width/2, settings.height/2]);
 	var projection = d3.geo.mercator()
 		.scale(1800)
-		.center([23, -28.5])
+		.center([21, -28.5])
 		.translate([settings.width / 2, settings.height / 2]);
 
 	function render() {
@@ -100,7 +100,7 @@ Code4SA.Map = (function(window,document,undefined) {
 			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary pull-right").text("Zoom out").on("click", zoomout);
 
 			// Results Area
-			var results_area = svg_container.insert("div").attr("id", "results_area");
+			var results_area = svg_container.insert("div").attr("id", "results_area").classed("col-md-4", true);
 			var year_area = results_area.insert("div").classed("row", true)
 				.insert("div").classed("col-md-6", true)
 				.insert("div").classed("btn-group", true)
