@@ -5261,7 +5261,10 @@ button#Code4SA .close {
 }
 #Code4SA #c4sa_svg {
   border: 1px #CCC solid;
-  min-height: 500px;
+  height: 700px;
+}
+#Code4SA #c4sa_svg_container {
+  max-height: 750px;
 }
 #Code4SA #c4sa_logo {
   font-size: 8pt;
@@ -5395,13 +5398,15 @@ button#Code4SA .close {
 }
 #Code4SA #results_area {
   position: absolute;
-  margin-top: 40px;
+  margin-top: 70px;
   margin-left: 0px;
   display: block;
   height: 80%;
   overflow-y: scroll;
-  background-color: rgba(255, 255, 255, 0.8);
   font-size: smaller;
+}
+#Code4SA #results_area table {
+  background-color: rgba(255, 255, 255, 0.8);
 }
 #Code4SA #actions_area {
   font-size: smaller;

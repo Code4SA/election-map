@@ -89,7 +89,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		if (settings.showMap) {
 			var map_el = el.insert("div").classed("row", true).attr("id", "c4sa_map_container");
 
-			svg_container = map_el.insert("div").classed("col-md-12", true);
+			svg_container = map_el.insert("div").classed("col-md-12", true).attr("id", "c4sa_svg_container");
 			svg_container
 				.insert("h3")
 				.html(settings.mapTitle);
@@ -147,7 +147,7 @@ Code4SA.Map = (function(window,document,undefined) {
 					tmp.push(key);
 				}
 			d3.select("#actions_area")
-					.append("div").classed("col-md-6", true)
+					.append("div").classed("col-md-7", true)
 					.append("ul").classed("nav nav-pills", true)
 					.selectAll("li")
 					.data(tmp, function(i, d) { return i; })
