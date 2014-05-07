@@ -262,6 +262,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		update_results_table();
 		d3.selectAll(".c4sa_btn_ballot").classed("btn-primary", false).classed("btn-default", true);
 		d3.select("#c4sa_btn_ballot_" + ballot).classed("btn-primary", true).classed("btn-default", false);
+		ga('send', 'event', 'change', 'ballot', ballot );
 	}
 
 	function change_year(year) {
@@ -269,6 +270,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		init();
 		d3.selectAll(".c4sa_btn_year").classed("btn-primary", false).classed("btn-default", true);
 		d3.select("#c4sa_btn_year_" + year).classed("btn-primary", true).classed("btn-default", false);
+		ga('send', 'event', 'change', 'year', year );
 	}
 
 	function update_data() {
@@ -508,6 +510,7 @@ Code4SA.Map = (function(window,document,undefined) {
 
 	function zoomin(d) {
 		curElem = d;
+		ga('send', 'event', 'change', 'zoom', d.id );
 		level = d.properties.level + 1;
 		if (level < 3) {
 			progressive_load(d);
