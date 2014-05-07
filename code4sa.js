@@ -511,7 +511,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		k = .8 / Math.max(dx / settings.width, dy / settings.height);
 		mapg.transition()
 			.duration(750)
-			.attr("transform", "translate(" + settings.width / 2 + "," + settings.height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
+			.attr("transform", "translate(" + settings.width / 1.5 + "," + settings.height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
 			.each("end", function() {
 				// hide_parents(d);
 			});
