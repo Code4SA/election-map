@@ -92,7 +92,20 @@ Code4SA.Map = (function(window,document,undefined) {
 			svg_container = map_el.insert("div").classed("col-md-12", true).attr("id", "c4sa_svg_container");
 			svg_container
 				.insert("h3")
+				.attr("id", "c4sa_title_text")
 				.html(settings.mapTitle);
+			d3.json(nationalurl + settings.year + "/", function(error, data) {
+				if (data.results.meta.vote_complete < 100) {
+					d3.select("#c4sa_title_text")
+						.insert("h4")
+						.text(data.results.meta.vote_complete + "% of vote counted");
+				} else {
+					d3.select("#c4sa_title_text")
+						.insert("h4")
+						.text("Vote counting complete");
+				}
+				// console.log(data.results.meta.vote_complete);
+			});
 			//Zoom Out
 			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary pull-right").text("Zoom out").on("click", zoomout);
 
@@ -275,7 +288,18 @@ Code4SA.Map = (function(window,document,undefined) {
 		ga('send', 'event', 'change', 'year', year );
 		mapg.select("g#c4sa_municipality").selectAll("g").remove();
 		mapg.select("g#c4sa_ward").selectAll("g").remove();
-		
+		d3.select("#c4sa_title_text").select("h4").remove();
+		d3.json(nationalurl + settings.year + "/", function(error, data) {
+			if (data.results.meta.vote_complete < 100) {
+				d3.select("#c4sa_title_text")
+					.insert("h4")
+					.text(data.results.meta.vote_complete + "% of vote counted");
+			} else {
+				d3.select("#c4sa_title_text")
+					.insert("h4")
+					.text("Vote counting complete");
+			}
+		});
 		zoomout();
 	}
 
@@ -371,8 +395,11 @@ Code4SA.Map = (function(window,document,undefined) {
 					.text(function(d) { 
 						// console.log(d);
 						if (d.properties.province_name) {
-							// console.log(d.properties);
-							return d.properties.province_name; 
+							var s = d.properties.province_name; 
+							if (d.properties.results.meta.vote_complete < 100) {
+								s += " (" + d.properties.results.meta.vote_complete + "%)";
+							}
+							return s;
 						} else {
 							return "";
 						}
@@ -391,10 +418,13 @@ Code4SA.Map = (function(window,document,undefined) {
 					
 					.text(function(d) { 
 						if (d.properties.municipality_name) {
-							// console.log(d.properties.municipality_name);
-							return d.properties.municipality_name; 
+							var s = d.properties.municipality_name;
+							if (d.properties.results.meta.vote_complete < 100) {
+								s += " (" + d.properties.results.meta.vote_complete + "%)";
+							}
+							return s; 
 						} else {
-							return "NA";
+							return "";
 						}
 					})
 					.style("font-size", function(d) {
