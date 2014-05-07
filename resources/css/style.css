@@ -5403,6 +5403,7 @@ button#Code4SA .close {
   display: block;
   height: 80%;
   overflow-y: scroll;
+  overflow-x: hidden;
   font-size: smaller;
 }
 #Code4SA #results_area table {
