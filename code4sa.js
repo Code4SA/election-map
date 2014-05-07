@@ -60,21 +60,21 @@ Code4SA.Map = (function(window,document,undefined) {
 			// Parliamentary Seats
 			var seats_el = el.insert("div").classed("row", true).classed("clearfix", true).attr("id", "c4sa_seats");
 			seats_el.insert("div").classed("col-md-12", true).insert("h3").html(settings.seatsTitle);
-			seats_el.insert("div").attr("id", "c4sa_seats_container").classed("col-md-12", true).classed("clearfix visible-xs", true);
+			seats_el.insert("div").attr("id", "c4sa_seats_container").classed("col-md-12", true).classed("clearfix", true);
 			// seats_el;
 
 			// Seats overlay
-			var seats_overlay = el.insert("div").attr("id", "c4sa_seats_overlay").classed("overlay", true);
-			seats_overlay.insert("h3").attr("id", "c4sa_party");
+			var seats_overlay = d3.select("#"+settings.bindToElementId).insert("div").attr("id", "c4sa_seats_overlay").classed("overlay", true);
+			seats_overlay.insert("h5").attr("id", "c4sa_party");
 			var seats_el_fields = [
 				{ name: "Votes", id: "c4sa_seats_votes" },
 				{ name: "Seats", id: "c4sa_seats_seats" },
 				{ name: "Percentage", id: "c4sa_seats_percentage" },
 			];
 			var seats_overlay_table = seats_overlay.insert("table").classed("table", true);
-			seats_overlay_table.insert("tr").selectAll("th").data(seats_el_fields).enter()
+			seats_overlay_table.insert("thead").insert("tr").selectAll("th").data(seats_el_fields).enter()
 				.insert("th").text(function(d) { return d.name });
-			seats_overlay_table.insert("tr").selectAll("td").data(seats_el_fields).enter()
+			seats_overlay_table.insert("tbody").insert("tr").selectAll("td").data(seats_el_fields).enter()
 				.insert("td").attr("id", function(d) { return d.id });
 		}
 		
@@ -93,18 +93,26 @@ Code4SA.Map = (function(window,document,undefined) {
 
 			svg_container = map_el.insert("div").classed("col-md-12", true);
 			//Zoom Out
-			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary").text("Zoom out").on("click", zoomout);
+			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary pull-right").text("Zoom out").on("click", zoomout);
 
-			// Results Table
-			var results_table = svg_container.insert("table").attr("id", "results_table")
-				.classed("table", true);
-			results_table
-				.append("tr")
-				.selectAll("th")
-				.data(["Leaderboard"])
-				.enter()
-					.append("th")
-					.html(function(d) { return d });
+			// Results Area
+			var results_area = svg_container.insert("div").attr("id", "results_area");
+			// var btn_group = results_area.insert("div")
+			// 	.classed("btn-group", true)
+			// 	.classed("btn-group-sm", true);
+			// var btn_options = [ "Provincial 2009", "National 2009", "Provincial 2014", "National 2014" ];
+
+			// btn_group
+			// 	.selectAll("div")
+			// 	.data(btn_options)
+			// 	.enter()
+			// 		.insert("div")
+			// 		.attr("type", "button")
+			// 		.classed("btn btn-default", true)
+			// 		.text(function(d) { return d });
+
+			results_area.insert("table")
+				.classed("table", true).classed("table-striped", true);
 					
 			svg = svg_container.insert("svg").attr("id", "c4sa_map_svg");
 			svg.append('defs').append('pattern');
@@ -300,6 +308,9 @@ Code4SA.Map = (function(window,document,undefined) {
 						// console.log(w, Math.min((w - 8) / this.getComputedTextLength() * 10), d.properties.municipality_name) ;
 						return Math.min(4, (w - 8) / this.getComputedTextLength() * 12)  + "px"; 
 					})
+					.attr("id", function(d) {
+						return "c4sa_text_"+d.properties.municipality;
+					})
 					;
 			}
 			hide_parents(sender);
@@ -471,7 +482,8 @@ Code4SA.Map = (function(window,document,undefined) {
 		if (level < 3) {
 			progressive_load(d);
 		}
-		
+		d3.selectAll(".place-label")
+			.style("display", "inherit");
 		if (level > 0) {
 			d3.select("#c4sa_zoomout").style("display", "inline");
 		}
@@ -482,6 +494,8 @@ Code4SA.Map = (function(window,document,undefined) {
 		if (level == 2) {
 			d3.selectAll(".municipality")
 				.style("display", "inherit");
+			d3.select("#c4sa_text_"+d.properties.municipality)
+				.style("display", "none");
 		}
 		var x, y, dx, dy, k, w, h;
 		var centroid = path.centroid(d);
@@ -691,7 +705,9 @@ Code4SA.Map = (function(window,document,undefined) {
 					}
 				);
 
-			d3.select("#results_table")
+			d3.select("#results_area")
+				.select("table")
+				.append("tbody")
 				.selectAll("tr")
 				.data(tmp, function(d, i) { return d + i; })
 				.enter()
@@ -701,7 +717,7 @@ Code4SA.Map = (function(window,document,undefined) {
 					if (d.votes > 0) {
 						var p = d.votes / data.results.meta.total_votes;
 					}
-					return "<td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
+					return "<td><img class='party-logo' src='resources/logos/"+ d.party.replace(/[^\w]/gi, "") + ".jpg' /></td><td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
 				});
 
 		});
@@ -713,16 +729,16 @@ Code4SA.Map = (function(window,document,undefined) {
 			if (el.select("#c4sa_party").text()) {
 				el.style("display", "block");
 				if (d3.event.layerY < (d3.select("#c4sa_seats")[0][0].clientHeight )) {
-					el.style("top", (d3.event.layerY + 10) + "px");
+					el.style("margin-top", (d3.event.clientY + window.scrollY + 10) + "px");
 				} else {
-					el.style("top", (d3.event.layerY - 100) + "px");
+					el.style("margin-top", (d3.event.clientY + window.scrollY - 100) + "px");
 				}
-				if (d3.event.layerX < 110) {
-					el.style("left", "10px");
-				} else if (d3.event.layerX > (d3.select("#c4sa_seats_container")[0][0].clientWidth - 120)) {
-					el.style("left", (d3.select("#c4sa_seats_container")[0][0].clientWidth - 210) + "px");
+				if (d3.event.layerX < 150) {
+					el.style("margin-left", "20px");
+				} else if (d3.event.clientX > (d3.select("#c4sa_seats_container")[0][0].offsetWidth - 80)) {
+					el.style("left", (d3.select("#c4sa_seats_container")[0][0].offsetWidth - 250) + "px");
 				} else {
-					el.style("left", (d3.event.layerX - 100) + "px");
+					el.style("left", (d3.event.clientX - 150) + "px");
 				}
 			}
 		});

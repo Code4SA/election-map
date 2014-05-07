@@ -1,7 +1,59 @@
 #Code4SA {
-	font-size: 9pt;
-	font-family: "Helvetica", arial, sans-serif;
-	line-height: 1.5;
+
+// Core variables and mixins
+@import "bootstrap-3.1.1/less/variables.less";
+@import "bootstrap-3.1.1/less/mixins.less";	
+
+// Reset
+@import "bootstrap-3.1.1/less/normalize.less";
+
+
+  font-family: sans-serif; // 1
+  -ms-text-size-adjust: 100%; // 2
+  -webkit-text-size-adjust: 100%; // 2
+
+
+@import "bootstrap-3.1.1/less/print.less";
+
+// Core CSS
+@import "bootstrap-3.1.1/less/scaffolding.less";
+@import "bootstrap-3.1.1/less/type.less";
+@import "bootstrap-3.1.1/less/code.less";
+@import "bootstrap-3.1.1/less/grid.less";
+@import "bootstrap-3.1.1/less/tables.less";
+@import "bootstrap-3.1.1/less/forms.less";
+@import "bootstrap-3.1.1/less/buttons.less";
+
+// Components
+@import "bootstrap-3.1.1/less/component-animations.less";
+@import "bootstrap-3.1.1/less/glyphicons.less";
+@import "bootstrap-3.1.1/less/dropdowns.less";
+@import "bootstrap-3.1.1/less/button-groups.less";
+@import "bootstrap-3.1.1/less/input-groups.less";
+@import "bootstrap-3.1.1/less/navs.less";
+@import "bootstrap-3.1.1/less/navbar.less";
+@import "bootstrap-3.1.1/less/breadcrumbs.less";
+@import "bootstrap-3.1.1/less/pagination.less";
+@import "bootstrap-3.1.1/less/pager.less";
+@import "bootstrap-3.1.1/less/labels.less";
+@import "bootstrap-3.1.1/less/badges.less";
+@import "bootstrap-3.1.1/less/jumbotron.less";
+@import "bootstrap-3.1.1/less/thumbnails.less";
+@import "bootstrap-3.1.1/less/alerts.less";
+@import "bootstrap-3.1.1/less/progress-bars.less";
+@import "bootstrap-3.1.1/less/media.less";
+@import "bootstrap-3.1.1/less/list-group.less";
+@import "bootstrap-3.1.1/less/panels.less";
+@import "bootstrap-3.1.1/less/wells.less";
+@import "bootstrap-3.1.1/less/close.less";
+
+// Utility classes
+@import "bootstrap-3.1.1/less/utilities.less";
+@import "bootstrap-3.1.1/less/responsive-utilities.less";
+	
+	// font-size: 9pt;
+	// font-family: "Helvetica", arial, sans-serif;
+	// line-height: 1.5;
 
 	#c4sa_svg {
 		border: 1px #CCC solid;
@@ -15,26 +67,29 @@
 	}
 
 	#c4sa_loading_container {
-		position:fixed;
-		width:100%; 
-		height:100%;
-		top: 0px;
-			bottom: 0px;
-			left: 0px;
-			right: 0px;
-		background-color: rgba(0, 0, 0, 0.1);
-		text-align: center;
-		z-index: 5000;
+		// position:fixed;
+		// width:100%; 
+		// height:100%;
+		// top: 0px;
+		// 	bottom: 0px;
+		// 	left: 0px;
+		// 	right: 0px;
+		// // background-color: rgba(0, 0, 0, 0.1);
+		// text-align: center;
+		// z-index: 5000;
 		#progtext { 
+			// position: fixed;
+			// top: 0px;
+			// bottom: 0px;
+			// left: 0px;
+			// right: 0px;
+			// width: 200px; 
+			// height: 200px; 
+			// margin: auto; 
 			position: fixed;
-			top: 0px;
-			bottom: 0px;
-			left: 0px;
-			right: 0px;
-			width: 200px; 
-			height: 200px; 
-			margin: auto; 
-			font-size: 32px; 
+			right: 20px;
+			bottom: 20px;
+			// font-size: 32px; 
 			font-weight: bold; 
 			color: #000;
 		}
@@ -112,7 +167,7 @@
 	#c4sa_resetdiv {
 		position: absolute;
 		margin-top: 10px;
-		margin-left: 10px;
+		right: 20px;
 		z-index: 6000;
 	}
 
@@ -151,23 +206,23 @@
 			line-height: 1em;
 		}
 
-		table {
-			margin-bottom: 0px;
-			tr {
-				th {
-					border-bottom: 1px #444 solid;
-					padding: 2px 5px;
-					text-align: center;
-				}
+		// table {
+		// 	margin-bottom: 0px;
+		// 	tr {
+		// 		th {
+		// 			border-bottom: 1px #444 solid;
+		// 			padding: 2px 5px;
+		// 			text-align: center;
+		// 		}
 
-				td {
-					padding: 2px 5px;
-					background-color: #EEE;
-					border: 1px #FFF solid;
-					text-align: center;
-				}
-			}
-		}
+		// 		td {
+		// 			padding: 2px 5px;
+		// 			background-color: #EEE;
+		// 			border: 1px #FFF solid;
+		// 			text-align: center;
+		// 		}
+		// 	}
+		// }
 	}
 
 	#c4sa_overlay {
@@ -175,7 +230,7 @@
 	}
 
 	#c4sa_seats_overlay {
-		width: 200px;
+		width: 300px;
 	}
 
 	#c4sa_seats_container:before,
@@ -208,20 +263,24 @@
 			}
 		}
 	}
-	#c4sa_zoomout {
-		background-color: #CCC;
-		padding: 2px 6px;
-		border: 1px #444 solid;
-		cursor: pointer;
-	}
+	// #c4sa_zoomout {
+	// 	background-color: #CCC;
+	// 	padding: 2px 6px;
+	// 	border: 1px #444 solid;
+	// 	cursor: pointer;
+	// }
 
-	#results_table {
+	#results_area {
 		position: absolute;
-		margin-top: 40px;
-		margin-left: 10px;
-		border: 1px #ccc solid;
-		min-width: 200px;
+		margin-top: 0px;
+		margin-left: 0px;
+		display: block;
+		// border: 1px #ccc solid;
+		width: 400px;
+		height: 100%;
+		overflow-y: scroll;
 		background-color: rgba(255,255,255,0.8);
+		font-size: smaller;
 	}
 
 	.province-label {
@@ -256,10 +315,15 @@
 
 	#c4sa_map.level-3 {
 		.place-label {
-			// display: none;
-			opacity: 0;
+			display: none;
+			// opacity: 0;
 		}
 	}
+
+	.party-logo {
+		width: 30px;
+	}
+
 
 
 }
