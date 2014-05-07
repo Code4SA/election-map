@@ -5261,6 +5261,7 @@ button#Code4SA .close {
 }
 #Code4SA #c4sa_svg {
   border: 1px #CCC solid;
+  min-height: 500px;
 }
 #Code4SA #c4sa_logo {
   font-size: 8pt;

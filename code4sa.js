@@ -100,8 +100,8 @@ Code4SA.Map = (function(window,document,undefined) {
 			var actions_area = svg_container.insert("div").attr("id", "actions_area").classed("col-md-12", true);
 			var results_area = svg_container.insert("div").attr("id", "results_area").classed("col-md-4", true);
 			var btn_group = actions_area.insert("div")
-				.classed("col-md-4", true)
-				.classed("btn-group", true);
+				.classed("col-md-5", true)
+				.classed("btn-group  btn-group-xs", true);
 			btn_group
 				.insert("div")
 				.attr("type", "button")
