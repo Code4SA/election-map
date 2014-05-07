@@ -153,7 +153,7 @@ Code4SA.Map = (function(window,document,undefined) {
 					.data(tmp, function(i, d) { return i; })
 					.enter()
 					.append("li")
-					.classed("active", function(d, i) { return (i == 0) })
+					// .classed("active", function(d, i) { return (i == 0) })
 					.append("a")
 					.attr("href", "#")
 					.text(function(d) { return d; })
