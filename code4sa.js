@@ -59,7 +59,7 @@ Code4SA.Map = (function(window,document,undefined) {
 
 	function render() {
 		// Renders the DOM
-		var el = d3.select("#"+settings.bindToElementId).append("div").attr("class", "container");
+		var el = d3.select("#"+settings.bindToElementId).append("div").attr("class", "container").style("margin", "0px");
 		
 		if (settings.showSeats) {
 			// Parliamentary Seats
