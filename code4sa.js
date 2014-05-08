@@ -651,7 +651,7 @@ Code4SA.Map = (function(window,document,undefined) {
 	function move_overlay() {
 		var coordinates = [0, 0];
 		coordinates = d3.mouse(svg.node());
-		var x = d3.event.pageX - 200;
+		var x = Math.min(740, d3.event.pageX - 200);
 		var y = d3.event.pageY + 20;
 		var overlay = d3.select("div#c4sa_overlay");
 		overlay
