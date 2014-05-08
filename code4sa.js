@@ -387,6 +387,7 @@ Code4SA.Map = (function(window,document,undefined) {
 					.enter()
 					.append("text")
 					.attr("class", "province-label")
+					.attr("id", function(d) { return "c4sa_text_" + d.id })
 					.attr("transform", function(d) {
 						return "translate(" + path.centroid(d) + ")";
 					})
@@ -555,6 +556,8 @@ Code4SA.Map = (function(window,document,undefined) {
 		}
 		d3.selectAll(".place-label")
 			.style("display", "inherit");
+		d3.selectAll(".province-label")
+			.style("display", "inherit");
 		if (level > 0) {
 			d3.select("#c4sa_zoomout").style("display", "inline");
 		}
@@ -573,6 +576,11 @@ Code4SA.Map = (function(window,document,undefined) {
 			d3.selectAll(".municipality")
 				.style("display", "inherit");
 			d3.select("#c4sa_text_"+d.properties.municipality)
+				.style("display", "none");
+		}
+		console.log(level);
+		if (level > 0) {
+			d3.select("#c4sa_text_"+d.properties.province)
 				.style("display", "none");
 		}
 		var x, y, dx, dy, k, w, h;
@@ -673,7 +681,7 @@ Code4SA.Map = (function(window,document,undefined) {
 			var title = "";
 			if (d.properties.level == 0) {
 				s = d.properties.province_name;
-				console.log(d);
+				// console.log(d);
 				if (d.properties.results.meta.vote_complete < 100) {
 					s = s + " (" + d.properties.results.meta.vote_complete + "% counted)";
 				}
