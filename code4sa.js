@@ -208,7 +208,7 @@ Code4SA.Map = (function(window,document,undefined) {
 
 			// Map results overlay
 			var overlay_el = el.insert("div").attr("id", "c4sa_overlay").classed("overlay", true);
-			overlay_el.insert("h3").attr("id", "c4sa_demarcation_title");
+			overlay_el.insert("h4").attr("id", "c4sa_demarcation_title");
 			var overlay_el_fields = [
 				{name: "Registered", id: "c4sa_num_registered", field: "num_registered" },
 				{name: "Spoilt", id: "c4sa_spoilt_votes", field: "spoilt_votes" },
@@ -672,11 +672,24 @@ Code4SA.Map = (function(window,document,undefined) {
 			
 			var title = "";
 			if (d.properties.level == 0) {
-				title = d.properties.province_name;
+				s = d.properties.province_name;
+				console.log(d);
+				if (d.properties.results.meta.vote_complete < 100) {
+					s = s + " (" + d.properties.results.meta.vote_complete + "% counted)";
+				}
+				title = s;
 			} else if (d.properties.level == 1) {
-				title = d.properties.municipality_name + ", " + d.properties.province;
+				s = d.properties.municipality_name + ", " + d.properties.province
+				if (d.properties.results.meta.vote_complete < 100) {
+					s = s + " (" + d.properties.results.meta.vote_complete + "% counted)";
+				}
+				title = s;
 			} else {
-				title = "Ward " + d.properties.ward_number + ", " + d.properties.municipality_name;
+				s = "Ward " + d.properties.ward_number + ", " + d.properties.municipality_name;
+				if (d.properties.results.meta.vote_complete < 100) {
+					s = s + " (" + d.properties.results.meta.vote_complete + "% counted)";
+				}
+				title = s;
 			}
 			if (d.properties.results) {
 				var results = d.properties.results;
@@ -863,15 +876,16 @@ Code4SA.Map = (function(window,document,undefined) {
 		} else {
 			var uri = settings.electionsAPIUrl + "/provincial/" + settings.year + "/province/?all_results=true";
 			d3.json(uri, function(error, data) {
-				
-				
-					// .classed()
 				for (province_id in data.results) {
 					var province = data.results[province_id];
+					var s = province_names[province.province_id];
+					if (province.results.meta.vote_complete < 100) {
+						s = s + " (" + province.results.meta.vote_complete + "% counted)";
+					}
 					d3.select("#results_area")
 						.append("h4")
 						.attr("id", "c4sa_results_province_" + province.province_id)
-						.html(province_names[province.province_id]);
+						.html(s);
 					var tmp = [];
 					var tot = 0;
 					for (party in province.results.vote_count) {
