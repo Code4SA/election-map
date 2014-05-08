@@ -551,7 +551,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		curElem = d;
 		ga('send', 'event', 'change', 'zoom', d.id );
 		level = d.properties.level + 1;
-		if (level < 3) {
+		if (level < 2) {
 			progressive_load(d);
 		}
 		d3.selectAll(".place-label")
