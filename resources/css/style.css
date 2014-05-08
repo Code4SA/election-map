@@ -5405,6 +5405,7 @@ button#Code4SA .close {
   overflow-y: scroll;
   overflow-x: hidden;
   font-size: smaller;
+  min-width: 350px;
 }
 #Code4SA #results_area table {
   background-color: rgba(255, 255, 255, 0.8);
