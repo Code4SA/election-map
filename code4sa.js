@@ -110,7 +110,7 @@ Code4SA.Map = (function(window,document,undefined) {
 			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary pull-right").text("Zoom out").on("click", zoomout);
 
 			// Results Area
-			var actions_area = svg_container.insert("div").attr("id", "actions_area").classed("col-md-12", true);
+			var actions_area = svg_container.insert("div").attr("id", "actions_area").classed("row", true);
 			var results_area = svg_container.insert("div").attr("id", "results_area").classed("col-md-4", true);
 			var btn_group = actions_area.insert("div")
 				.classed("col-md-5", true)
