@@ -875,7 +875,8 @@ Code4SA.Map = (function(window,document,undefined) {
 					.html(function(d) {
 						p = 0;
 						if (d.votes > 0) {
-							var p = d.votes / data.results.meta.total_votes;
+							// var p = d.votes / data.results.meta.total_votes;
+							var p = d.votes / tot;
 						}
 						return "<td><img class='party-logo' src='resources/logos/small-"+ d.party.replace(/[^\w]/gi, "") + ".jpg' /></td><td>"+d.party+"</td><td>"+num_format(d.votes) + "</td><td>" + perc_format(p) + "</td>"; 
 					});
