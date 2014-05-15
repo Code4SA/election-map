@@ -287,6 +287,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		ga('send', 'event', 'change', 'year', year );
 		mapg.select("g#c4sa_municipality").selectAll("g").remove();
 		mapg.select("g#c4sa_ward").selectAll("g").remove();
+		mapg.select("g#c4sa_voting_district").selectAll("g").remove();
 		d3.select("#c4sa_title_text").select("h4").remove();
 		d3.json(nationalurl + settings.year + "/", function(error, data) {
 			if (data.results.meta.vote_complete < 100) {
@@ -299,6 +300,7 @@ Code4SA.Map = (function(window,document,undefined) {
 					.text("Vote counting complete");
 			}
 		});
+
 		zoomout();
 	}
 
@@ -493,6 +495,7 @@ Code4SA.Map = (function(window,document,undefined) {
 	}
 
 	function init() {
+		level = 1;
 		if (settings.showSeats) {
 			init_seats();
 		}
