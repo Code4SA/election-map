@@ -5303,6 +5303,9 @@ button#Code4SA .close {
 #Code4SA #c4sa_map.level-0 .level-2 {
   display: none;
 }
+#Code4SA #c4sa_map.level-0 .level-3 {
+  display: none;
+}
 #Code4SA #c4sa_map.level-1 .level-0 {
   display: block;
 }
@@ -5310,6 +5313,9 @@ button#Code4SA .close {
   display: block;
 }
 #Code4SA #c4sa_map.level-1 .level-2 {
+  display: none;
+}
+#Code4SA #c4sa_map.level-1 .level-3 {
   display: none;
 }
 #Code4SA #c4sa_map.level-2 .level-0 {
@@ -5320,6 +5326,9 @@ button#Code4SA .close {
 }
 #Code4SA #c4sa_map.level-2 .level-2 {
   display: block;
+}
+#Code4SA #c4sa_map.level-2 .level-3 {
+  display: none;
 }
 #Code4SA #c4sa_resetdiv {
   position: absolute;

@@ -38,8 +38,8 @@ Code4SA.Map = (function(window,document,undefined) {
 	var svg = false;
 	
 	var level = 0;
-	var levels = ["province", "municipality", "ward"];
-	var levels_quantization = [5000, 3000, 3000];
+	var levels = ["province", "municipality", "ward", "voting_district"];
+	var levels_quantization = [5000, 3000, 3000, 3000];
 	var province_names = { "EC": "Eastern Cape", "FS": "Free State", "GT": "Gauteng", "KZN": "KwaZulu-Natal", "LIM": "Limpopo", "MP": "Mpumalanga", "NC": "Northern Cape", "NW": "North West", "WC": "Western Cape"}
 
 	var wardscache = {};
@@ -104,7 +104,6 @@ Code4SA.Map = (function(window,document,undefined) {
 						.insert("h4")
 						.text("Vote counting complete");
 				}
-				// console.log(data.results.meta.vote_complete);
 			});
 			//Zoom Out
 			var zout = svg_container.insert("div").attr("id", "c4sa_resetdiv").insert("a").attr("id", "c4sa_zoomout").style("display", "none").attr("class", "btn btn-primary pull-right").text("Zoom out").on("click", zoomout);
@@ -199,6 +198,7 @@ Code4SA.Map = (function(window,document,undefined) {
 			mapg.append("g").attr("id", "c4sa_province").classed("level-0", true).append("g");
 			mapg.append("g").attr("id", "c4sa_municipality").classed("level-1", true).append("g");
 			mapg.append("g").attr("id", "c4sa_ward").classed("level-2", true).append("g");
+			mapg.append("g").attr("id", "c4sa_voting_district").classed("level-3", true).append("g");
 			mapg
 				.on("mousemove", move_overlay)
 				.on("mouseout", hide_overlay);
@@ -270,7 +270,6 @@ Code4SA.Map = (function(window,document,undefined) {
 	}
 
 	function change_ballot(ballot) {
-		// console.log(curElem);
 		settings.ballot = ballot;
 		apiurl = settings.electionsAPIUrl + "/" + ballot + "/";
 		update_data();
@@ -333,9 +332,10 @@ Code4SA.Map = (function(window,document,undefined) {
 			for(var x = 0; x < topo.length; x++) {
 				for(var y = 0; y < data.length; y++) {
 					if (data[y][demarcation + "_id"] == topo[x].id) {
+						winners = sort_votes(data[y].results.vote_count);
 						topo[x].properties.results = data[y].results;
-						topo[x].properties.winner = calc_winners(data[y].results.vote_count);
-						topo[x].properties.winner.perc = topo[x].properties.winner.vote_count / data[y].results.meta.total_votes;
+						topo[x].properties.winner = winners[0];
+						topo[x].properties.winner.perc = topo[x].properties.winner[1] / data[y].results.meta.total_votes;
 						if (isNaN(topo[x].properties.winner.perc)) {
 							topo[x].properties.winner.perc = 0;
 						}
@@ -343,6 +343,8 @@ Code4SA.Map = (function(window,document,undefined) {
 				}
 				topo[x].properties.level = levels.indexOf(demarcation);
 			}
+
+
 
 			//Plot our areas
 			var areas = area.selectAll("." + demarcation).data(topo);
@@ -357,13 +359,9 @@ Code4SA.Map = (function(window,document,undefined) {
 					return demarcation + " " + d.id + " " + "winner_" + winner_id; 
 				})
 				.style("fill", function(d, i) {
-					if (d.properties.winner && !isNaN(d.properties.winner.perc) && (d.properties.winner.perc > 0)) {
-						
-						// return gen_pattern(d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc)), "party_" + 1); 
-						// return d3.rgb(colors[d.properties.winner.party]).brighter(linear_scale(d.properties.winner.perc)); 
-						return d3.rgb(colors[d.properties.winner.party]).darker(linear_scale(d.properties.winner.perc))
+					if (d.properties.winner && d.properties.winner[0] && !isNaN(d.properties.winner.perc) && (d.properties.winner.perc > 0)) {
+						return d3.rgb(colors[d.properties.winner[0]]).darker(linear_scale(d.properties.winner.perc))
 					} else {
-						// return gen_pattern("#444", "empty_" + i);
 						return("#CCC")
 					}
 				})
@@ -374,11 +372,19 @@ Code4SA.Map = (function(window,document,undefined) {
 				.on("mouseout", unhovered);
 
 			//Chuck on a border
+			
+			
 			var stroke = border.append("path")
 				.datum(topojson.mesh(mapdata, mapdata.objects.demarcation, function (a, b){ return a !== b; }))
 				.attr("class", "border " + demarcation + "-border")
 				.attr("d", path)
-				.style("stroke-width", "0.1px");
+				.style("stroke-width", function(d) {
+					var bounds = path.bounds(d);
+					dx = bounds[1][0] - bounds[0][0];
+					dy = bounds[1][1] - bounds[0][1];
+					k = .8 / Math.max(dx / settings.width, dy / settings.height);
+					return (1 / k * 2) + "px";
+				});
 
 			//Let's put some text on there
 			if (demarcation == "province") {
@@ -394,7 +400,6 @@ Code4SA.Map = (function(window,document,undefined) {
 					.attr("text-anchor", "middle")
 					.attr("dy", ".35em")
 					.text(function(d) { 
-						// console.log(d);
 						if (d.properties.province_name) {
 							var s = d.properties.province_name; 
 							if (d.properties.results.meta.vote_complete < 100) {
@@ -435,8 +440,6 @@ Code4SA.Map = (function(window,document,undefined) {
 							return "2px";
 						}
 						var size = Math.min(4, (w - 8) / this.getComputedTextLength() * 12);
-						// console.log(size);
-						// console.log(w, Math.min((w - 8) / this.getComputedTextLength() * 10), d.properties.municipality_name) ;
 						return  size + "px"; 
 					})
 					.attr("id", function(d) {
@@ -444,8 +447,6 @@ Code4SA.Map = (function(window,document,undefined) {
 					})
 					;
 			}
-			// console.log(sender);
-			// hide_parents(sender);
 		}
 		return true;
 	} //update_map
@@ -523,6 +524,10 @@ Code4SA.Map = (function(window,document,undefined) {
 			//Load Wards
 			load_level(level, { municipality: d.id });
 		}
+		if (level == 3) {
+			//Load VDs
+			load_level(level, { ward: d.id });
+		}
 		hide_loader();
 	}
 
@@ -551,7 +556,7 @@ Code4SA.Map = (function(window,document,undefined) {
 		curElem = d;
 		ga('send', 'event', 'change', 'zoom', d.id );
 		level = d.properties.level + 1;
-		if (level < 3) {
+		if (level < 4) {
 			progressive_load(d);
 		}
 		d3.selectAll(".place-label")
@@ -578,7 +583,6 @@ Code4SA.Map = (function(window,document,undefined) {
 			d3.select("#c4sa_text_"+d.properties.municipality)
 				.style("display", "none");
 		}
-		console.log(level);
 		if (level > 0) {
 			d3.select("#c4sa_text_"+d.properties.province)
 				.style("display", "none");
@@ -596,13 +600,10 @@ Code4SA.Map = (function(window,document,undefined) {
 			.attr("transform", "translate(" + settings.width / 1.5 + "," + settings.height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
 			.each("end", function() {
 				// hide_parents(d);
+				mapg.selectAll(".c4sa_border").selectAll("path").style("stroke-width", (1/k * 2) + "px");
 			});
-
+		
 		mapg.attr("class", "level-" + level);
-		// console.log(k);
-		// svg.selectAll(".c4sa_textual")
-		// 	.style("font-size", "2px")
-		// 	.attr("blah", function(d) { console.log(d) });
 	}
 
 	
@@ -627,6 +628,9 @@ Code4SA.Map = (function(window,document,undefined) {
 			zoomin(el.data()[0]);
 		} else if (level == 3) {
 			el = d3.select("#c4sa_" + curElem.properties.municipality);
+			zoomin(el.data()[0]);
+		} else if (level == 4) {
+			el = d3.select("#c4sa_" + curElem.properties.ward);
 			zoomin(el.data()[0]);
 		}
 	}
@@ -681,7 +685,6 @@ Code4SA.Map = (function(window,document,undefined) {
 			var title = "";
 			if (d.properties.level == 0) {
 				s = d.properties.province_name;
-				// console.log(d);
 				if (d.properties.results.meta.vote_complete < 100) {
 					s = s + " (" + d.properties.results.meta.vote_complete + "% counted)";
 				}
@@ -692,8 +695,14 @@ Code4SA.Map = (function(window,document,undefined) {
 					s = s + " (" + d.properties.results.meta.vote_complete + "% counted)";
 				}
 				title = s;
-			} else {
+			} else if (d.properties.level == 2) {
 				s = "Ward " + d.properties.ward_number + ", " + d.properties.municipality_name;
+				if (d.properties.results.meta.vote_complete < 100) {
+					s = s + " (" + d.properties.results.meta.vote_complete + "% counted)";
+				}
+				title = s;
+			} else if (d.properties.level == 3) {
+				s = "Voting District " + d.properties.voting_district + ", " + d.properties.municipality_name;
 				if (d.properties.results.meta.vote_complete < 100) {
 					s = s + " (" + d.properties.results.meta.vote_complete + "% counted)";
 				}
@@ -772,14 +781,12 @@ Code4SA.Map = (function(window,document,undefined) {
 	function init_seats() {
 		var seats=d3.select("#c4sa_seats_container");
 		d3.json(nationalurl + settings.year + "/", function(error, data) {
-			// console.log(data);
 			var tmp = [];
 			var tot = 0;
 			for (party in data.results.vote_count) {
 				tmp.push({ party: party, votes: data.results.vote_count[party] });
 				tot += data.results.vote_count[party];
 			}
-			// console.log(tot / 200);
 			tmp.sort(function(a, b) { if (a.votes < b.votes) return 1; return -1; });
 
 			var seat_count = 0;
@@ -789,8 +796,6 @@ Code4SA.Map = (function(window,document,undefined) {
 				})
 				.each(
 					function(d) {
-						// console.log(d);
-						// console.log(d.party, (d.votes / tot * 200));
 						for(var x = 0; x < Math.round(d.votes / tot * 200); x++) {
 							seat_count++;
 							if (seat_count < 200) {
@@ -842,17 +847,12 @@ Code4SA.Map = (function(window,document,undefined) {
 	}
 
 	function update_results_table() {
-		// console.log("Updating results table");
-		// console.log(settings.electionsAPIUrl + "/" + settings.ballot + "/" + settings.year + "/");
 		d3.select("#results_area")
 			.selectAll("table")
 			.remove();
 		d3.select("#results_area")
 			.selectAll("h4")
 			.remove();
-		// d3.select("#actions_area")
-		// 	.selectAll("ul")
-		// 	.remove();
 		if (settings.ballot == "national") {
 			var uri = settings.electionsAPIUrl + "/" + settings.ballot + "/" + settings.year + "/";
 			
